@@ -1,11 +1,12 @@
 import { useState } from "react";
+import "./CreateUserPage.css";
 
 export default function CreateUserPage() {
     const [form, setForm] = useState({
         firstName: "",
         lastName: "",
         dateOfBirth: "",
-        yearOfStudy: "FRESHMAN", // default value
+        yearOfStudy: "FRESHMAN",
         email: "",
         passwordHash: "",
     });
@@ -16,7 +17,6 @@ export default function CreateUserPage() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-
         try {
             const response = await fetch("http://localhost:8080/users", {
                 method: "POST",
@@ -37,20 +37,23 @@ export default function CreateUserPage() {
     };
 
     return (
-        <form onSubmit={handleSubmit}>
-            <h2>Create User</h2>
-            <input name="firstName" placeholder="First Name" value={form.firstName} onChange={handleChange} required />
-            <input name="lastName" placeholder="Last Name" value={form.lastName} onChange={handleChange} required />
-            <input name="dateOfBirth" type="date" value={form.dateOfBirth} onChange={handleChange} required />
-            <select name="yearOfStudy" value={form.yearOfStudy} onChange={handleChange}>
-                <option value="FRESHMAN">Freshman</option>
-                <option value="SOPHOMORE">Sophomore</option>
-                <option value="JUNIOR">Junior</option>
-                <option value="SENIOR">Senior</option>
-            </select>
-            <input name="email" type="email" placeholder="Email" value={form.email} onChange={handleChange} required />
-            <input name="passwordHash" type="password" placeholder="Password" value={form.passwordHash} onChange={handleChange} required />
-            <button type="submit">Register</button>
-        </form>
+        <div className="page-container">
+            <form onSubmit={handleSubmit} className="form-box">
+                <h2>Create Account</h2>
+
+                <input name="firstName" placeholder="First Name" value={form.firstName} onChange={handleChange} required />
+                <input name="lastName" placeholder="Last Name" value={form.lastName} onChange={handleChange} required />
+                <input name="dateOfBirth" type="date" value={form.dateOfBirth} onChange={handleChange} required />
+                <select name="yearOfStudy" value={form.yearOfStudy} onChange={handleChange}>
+                    <option value="FRESHMAN">Freshman</option>
+                    <option value="SOPHOMORE">Sophomore</option>
+                    <option value="JUNIOR">Junior</option>
+                    <option value="SENIOR">Senior</option>
+                </select>
+                <input name="email" type="email" placeholder="Email" value={form.email} onChange={handleChange} required />
+                <input name="passwordHash" type="password" placeholder="Password" value={form.passwordHash} onChange={handleChange} required />
+                <button type="submit">Register</button>
+            </form>
+        </div>
     );
 }
