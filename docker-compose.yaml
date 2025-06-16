@@ -1,0 +1,9 @@
+services:
+  postgres:
+    image: postgres:latest
+    environment:
+      - POSTGRES_USER=java
+      - POSTGRES_PASSWORD=spring
+      - POSTGRES_DB=bootcamp
+    ports:
+      - "54321:5432"
