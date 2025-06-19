@@ -49,6 +49,8 @@ export default function CreateUserPage() {
                     <option value="SOPHOMORE">Sophomore</option>
                     <option value="JUNIOR">Junior</option>
                     <option value="SENIOR">Senior</option>
+                    <option value="ADDITINAL">Additional</option>
+                    <option value="Master">Master</option>
                 </select>
                 <input name="email" type="email" placeholder="Email" value={form.email} onChange={handleChange} required />
                 <input name="passwordHash" type="password" placeholder="Password" value={form.passwordHash} onChange={handleChange} required />

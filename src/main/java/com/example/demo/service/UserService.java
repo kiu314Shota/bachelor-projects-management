@@ -5,6 +5,7 @@ import com.example.demo.domain.YearOfStudy;
 import com.example.demo.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -16,10 +17,11 @@ import java.util.stream.StreamSupport;
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepository repository;
+    private final PasswordEncoder passwordEncoder;
 
-
-    public User save(User entity) {
-        return repository.save(entity);
+    public User save(User user) {
+        user.setPasswordHash(passwordEncoder.encode(user.getPasswordHash())); // encrypt password
+        return repository.save(user);
     }
 
     public Optional<User> findById(Long id) {
