@@ -61,6 +61,10 @@ public class User {
     private List<Hub> memberHubs;
 
 
+    @Enumerated(EnumType.STRING)
+    private Role role;
+
+
 }
 
 //yearsofstudy ze

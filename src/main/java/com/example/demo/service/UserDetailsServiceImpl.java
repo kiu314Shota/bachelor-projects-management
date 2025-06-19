@@ -22,7 +22,8 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         return org.springframework.security.core.userdetails.User
                 .withUsername(user.getEmail())
                 .password(user.getPasswordHash())
-                .authorities("USER") // როლი თუ გინდა, აქ დაამატე
+                .authorities("ROLE_" + user.getRole().name()) // მაგ: ROLE_ADMIN ან ROLE_USER
                 .build();
+
     }
 }
