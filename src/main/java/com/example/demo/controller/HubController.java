@@ -6,6 +6,7 @@ import com.example.demo.dto.HubRequestDto;
 import com.example.demo.dto.HubResponseDto;
 import com.example.demo.service.HubService;
 import com.example.demo.service.UserService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.web.bind.annotation.*;
@@ -17,6 +18,8 @@ import java.util.stream.StreamSupport;
 @RestController
 @RequestMapping("/hubs")
 @RequiredArgsConstructor
+@SecurityRequirement(name = "bearerAuth")
+
 public class HubController {
 
     private final HubService hubService;
