@@ -1,6 +1,7 @@
 import { useState } from "react";
-import api from "./axios";
+import api from "../axios.js";
 import { useNavigate } from "react-router-dom";
+import "./LoginPage.css";
 
 export default function LoginPage() {
     const [email, setEmail] = useState("");
@@ -17,7 +18,7 @@ export default function LoginPage() {
             api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 
             alert("შესვლა წარმატებულია");
-            navigate("/posts"); // აქ წაიყვანს პოსტების გვერდზე
+            navigate("/homePage"); // აქ წაიყვანს პოსტების გვერდზე
         } catch (err) {
             alert(err.response?.data?.message || "Login failed");
         }

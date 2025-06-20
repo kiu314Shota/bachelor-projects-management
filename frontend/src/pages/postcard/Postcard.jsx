@@ -1,7 +1,8 @@
 import { useState } from "react";
+import api from "../axios";
 import "./Postcard.css";
 
-export default function PostCard({ post, getUser, getHub, getComments }) {
+export default function PostCard({ post, getUser, getHub, getComments, currentUserId }) {
     const author = getUser(post.authorId);
     const hub = getHub(post.hubId);
     const allComments = getComments(post.commentIds);
@@ -35,23 +36,23 @@ export default function PostCard({ post, getUser, getHub, getComments }) {
         }
     };
 
-
-    const handleAddComment = () => {
+    const handleAddComment = async () => {
         if (!newComment.trim()) return;
 
-        const newId = Date.now();
         const newCommentObj = {
-            id: newId,
             content: newComment,
-            createdAt: new Date().toISOString(),
-            upVotes: 0,
-            downVotes: 0,
             postId: post.id,
-            authorId: 1, // hardcoded current user
+            authorId: currentUserId,
+            hubId: post.hubId,
         };
 
-        setComments([...comments, newCommentObj]);
-        setNewComment("");
+        try {
+            const res = await api.post("/comments", newCommentObj);
+            setComments([...comments, res.data]);
+            setNewComment("");
+        } catch (err) {
+            console.error("Failed to submit comment", err);
+        }
     };
 
     function formatPostTimestamp(timestamp) {
@@ -75,7 +76,6 @@ export default function PostCard({ post, getUser, getHub, getComments }) {
         return posted.getFullYear().toString();
     }
 
-
     function formatCommentTimestamp(timestamp) {
         const now = new Date();
         const posted = new Date(timestamp);
@@ -97,7 +97,6 @@ export default function PostCard({ post, getUser, getHub, getComments }) {
         return posted.getFullYear().toString();
     }
 
-
     return (
         <div className="post">
             <div className="post-header">
@@ -110,7 +109,6 @@ export default function PostCard({ post, getUser, getHub, getComments }) {
                             {hub?.name}
                         </button>
                     </p>
-
                 </div>
             </div>
 
@@ -141,7 +139,6 @@ export default function PostCard({ post, getUser, getHub, getComments }) {
                             <strong>{getUser(c.authorId)?.firstName || "Anonymous"}:</strong> {c.content}
                             <span className="comment-time"> | {formatCommentTimestamp(c.createdAt)}</span>
                         </p>
-
                     ))}
                     {comments.length > 3 && visibleCount < comments.length && (
                         <button

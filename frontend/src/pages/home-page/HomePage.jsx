@@ -3,90 +3,101 @@ import "./HomePage.css";
 import PostCard from "../postcard/Postcard";
 import Sidebar from "../sidebar/Sidebar";
 import Navbar from "../navbar/Navbar";
-import SpecialPanel from "../special-panel/SpecialPanel.jsx";
-
-const mockUsers = [
-    { id: 1, firstName: "Gigi", lastName: "Jishkariani",profileImage: "public/mock-avatars/gigikampusi.png", dateOfBirth: "2000-06-20", yearOfStudy: "FRESHMAN", email: "gigi@example.com", adminHubIds: [1], memberHubIds: [1, 2] },
-    { id: 2, firstName: "Lilu", lastName: "Lilu",profileImage: "public/mock-avatars/lilu.jpg", dateOfBirth: "2001-03-15", yearOfStudy: "SENIOR", email: "nino@example.com", adminHubIds: [], memberHubIds: [1] },
-];
-
-const mockHubs = [
-    { id: 1, name: "Development", public: true, memberIds: [1, 2] },
-    { id: 2, name: "Design", public: true, memberIds: [1] },
-    { id: 3, name: "AI Research", public: true, memberIds: [] },
-    { id: 4, name: "Startups", public: true, memberIds: [] },
-    { id: 5, name: "Gaming", public: true, memberIds: [2] },
-];
-
-const mockHubActivity = [
-    { hubId: 1, count: 5 },  // Development
-    { hubId: 2, count: 2 },  // Design
-    { hubId: 3, count: 8 },  // AI Research
-    { hubId: 4, count: 1 },  // Startups
-];
-
-
-
-const mockComments = [
-    { id: 1, content: "Welcome to KiUX!", createdAt: "2025-06-19T21:40:00Z", upVotes: 3, downVotes: 0, postId: 1, authorId: 2 },
-    { id: 2, content: "Great update!", createdAt: "2025-06-19T22:00:00Z", upVotes: 1, downVotes: 0, postId: 2, authorId: 1 },
-];
-
-const mockPosts = [
-    { id: 1, text: "Excited to join KiUX 🚀", createdAt: "2025-06-19T21:30:00Z", upVotes: 5, downVotes: 0, authorId: 1, hubId: 1, commentIds: [1] },
-    { id: 2, text: "Pushing new design updates today 🎨", createdAt: "2025-06-19T20:00:00Z", upVotes: 2, downVotes: 1, authorId: 2, hubId: 2, commentIds: [2] },
-];
+import SpecialPanel from "../special-panel/SpecialPanel";
+import api from "../axios";
+import { jwtDecode } from "jwt-decode";
 
 export default function HomePage() {
     const [posts, setPosts] = useState([]);
-    const currentUserId = 1;
+    const [users, setUsers] = useState([]);
+    const [comments, setComments] = useState([]);
+    const [hub, setHub] = useState(null);
+    const [currentUserId, setCurrentUserId] = useState(null);
     const [newPostText, setNewPostText] = useState("");
     const [anonymous, setAnonymous] = useState(false);
+    const hubId = 1;
 
     const postBoxRef = useRef(null);
 
-    // Set a global ref (ugly but quick)
     useEffect(() => {
         window._scrollToPostBox = () => {
             postBoxRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
         };
     }, []);
 
+    useEffect(() => {
+        const fetchInitialData = async () => {
+            try {
+                const token = localStorage.getItem("token");
+                if (token) {
+                    const decoded = jwtDecode(token);
+                    if (decoded.userId) setCurrentUserId(decoded.userId);
+                }
 
-    const getUser = (id) => mockUsers.find((u) => u.id === id);
-    const getHub = (id) => mockHubs.find((h) => h.id === id);
-    const getComments = (ids) => mockComments.filter((c) => ids.includes(c.id));
+                const [hubRes, postsRes, usersRes, commentsRes] = await Promise.all([
+                    api.get(`/hubs/${hubId}`),
+                    api.get(`/posts/hub/${hubId}`),
+                    api.get(`/users`),
+                    api.get(`/comments`)
+                ]);
 
-    const handlePostSubmit = () => {
-        if (!newPostText.trim()) return;
-
-        const newPost = {
-            id: Date.now(),
-            text: newPostText,
-            createdAt: new Date().toISOString(),
-            upVotes: 0,
-            downVotes: 0,
-            authorId: anonymous ? null : currentUserId,
-            hubId: 1,
-            commentIds: [],
+                setHub(hubRes.data);
+                setPosts(postsRes.data);
+                setUsers(usersRes.data);
+                setComments(commentsRes.data);
+            } catch (err) {
+                console.error("მონაცემების წამოღება ვერ მოხერხდა", err);
+            }
         };
 
-        setPosts([newPost, ...posts]);
-        setNewPostText("");
-        setAnonymous(false);
+        fetchInitialData();
+    }, []);
+
+    const handlePostSubmit = async () => {
+        if (!newPostText.trim()) return;
+
+        try {
+            const payload = {
+                text: newPostText,
+                hubId,
+                authorId: anonymous ? null : currentUserId,
+            };
+
+            const res = await api.post("/posts/create", payload);
+            setPosts((prev) => [res.data, ...prev]);
+            setNewPostText("");
+            setAnonymous(false);
+        } catch (err) {
+            console.error("Posting failed", err);
+        }
     };
 
-    useEffect(() => {
-        setTimeout(() => {
-            setPosts(mockPosts);
-        }, 300);
-    }, []);
+    const handleCommentSubmit = async (postId, content) => {
+        if (!content.trim()) return;
+        try {
+            const res = await api.post("/comments", {
+                content,
+                postId,
+                hubId,
+                authorId: currentUserId
+            });
+            setComments(prev => [...prev, res.data]);
+        } catch (err) {
+            console.error("კომენტარის ჩაწერა ვერ მოხერხდა", err);
+        }
+    };
+
+    const getUser = (id) => users.find((u) => u.id === id);
+    const getHub = (id) => hub && hub.id === id ? hub : null;
+    const getComments = (postId) => comments.filter((c) => c.postId === postId);
+
+    if (!hub || !currentUserId) return <p>იტვირთება...</p>;
 
     return (
         <div className="home-container">
             <Navbar />
             <div className="main-content">
-                <Sidebar currentUserId={currentUserId} hubs={mockHubs} users={mockUsers} />
+                <Sidebar currentUserId={currentUserId} hubs={[hub]} users={users} />
                 <section className="feed">
                     <div className="post-box" ref={postBoxRef}>
                         <textarea
@@ -122,14 +133,15 @@ export default function HomePage() {
                             key={post.id}
                             post={post}
                             getUser={getUser}
-                            getHub={getHub}
-                            getComments={getComments}
+                            getHub={() => getHub(post.hubId)}
+                            getComments={() => getComments(post.id)}
+                            getCommentAuthor={(id) => getUser(id)}
+                            onCommentSubmit={handleCommentSubmit}
+                            currentUserId={currentUserId}
                         />
                     ))}
                 </section>
-                <SpecialPanel users={mockUsers} hubActivity={mockHubActivity} hubs={mockHubs} />
-
-
+                <SpecialPanel users={users} hubActivity={[]} hubs={[hub]} />
             </div>
         </div>
     );

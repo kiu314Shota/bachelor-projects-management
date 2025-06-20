@@ -1,5 +1,6 @@
 import { useState } from "react";
 import "./CreateUserPage.css";
+import { useNavigate } from "react-router-dom";
 
 export default function CreateUserPage() {
     const [form, setForm] = useState({
@@ -10,6 +11,8 @@ export default function CreateUserPage() {
         email: "",
         passwordHash: "",
     });
+
+    const navigate = useNavigate();
 
     const handleChange = (e) => {
         setForm({ ...form, [e.target.name]: e.target.value });
@@ -26,6 +29,7 @@ export default function CreateUserPage() {
 
             if (response.ok) {
                 alert("User created successfully!");
+                navigate("/login"); // ← გადავდივართ ლოგინზე
             } else {
                 const err = await response.text();
                 alert("Error: " + err);

@@ -6,14 +6,12 @@ import com.example.demo.dto.LoginRequestDto;
 import com.example.demo.dto.LoginResponseDto;
 import com.example.demo.repository.UserRepository;
 import com.example.demo.service.JwtService;
-import com.example.demo.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -36,7 +34,7 @@ public class AuthController {
         }
 
         User user = userRepository.findByEmail(loginDto.getEmail());
-        String token = jwtService.generateToken(user.getEmail());
+        String token = jwtService.generateToken(user.getId(), user.getEmail());
 
         return ResponseEntity.ok(new LoginResponseDto(token));
     }
