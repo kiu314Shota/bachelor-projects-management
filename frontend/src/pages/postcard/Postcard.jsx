@@ -4,37 +4,166 @@ import "./Postcard.css";
 export default function PostCard({ post, getUser, getHub, getComments }) {
     const author = getUser(post.authorId);
     const hub = getHub(post.hubId);
-    const comments = getComments(post.commentIds);
+    const allComments = getComments(post.commentIds);
 
     const [upVotes, setUpVotes] = useState(post.upVotes);
+    const [vote, setVote] = useState(null); // 'like', 'dislike', or null
     const [downVotes, setDownVotes] = useState(post.downVotes);
+    const [visibleCount, setVisibleCount] = useState(3);
+    const [newComment, setNewComment] = useState("");
+    const [comments, setComments] = useState(allComments);
+
+    const handleLike = () => {
+        if (vote === "like") {
+            setVote(null);
+            setUpVotes(upVotes - 1);
+        } else {
+            setVote("like");
+            setUpVotes(upVotes + 1);
+            if (vote === "dislike") setDownVotes(downVotes - 1);
+        }
+    };
+
+    const handleDislike = () => {
+        if (vote === "dislike") {
+            setVote(null);
+            setDownVotes(downVotes - 1);
+        } else {
+            setVote("dislike");
+            setDownVotes(downVotes + 1);
+            if (vote === "like") setUpVotes(upVotes - 1);
+        }
+    };
+
+
+    const handleAddComment = () => {
+        if (!newComment.trim()) return;
+
+        const newId = Date.now();
+        const newCommentObj = {
+            id: newId,
+            content: newComment,
+            createdAt: new Date().toISOString(),
+            upVotes: 0,
+            downVotes: 0,
+            postId: post.id,
+            authorId: 1, // hardcoded current user
+        };
+
+        setComments([...comments, newCommentObj]);
+        setNewComment("");
+    };
+
+    function formatPostTimestamp(timestamp) {
+        const now = new Date();
+        const posted = new Date(timestamp);
+        const diffMs = now - posted;
+
+        const diffMinutes = Math.floor(diffMs / 60000);
+        if (diffMinutes < 60) return `${diffMinutes}m`;
+
+        const diffHours = Math.floor(diffMinutes / 60);
+        if (diffHours < 24) return `${diffHours}h`;
+
+        const diffDays = Math.floor(diffHours / 24);
+        if (diffDays < 7) return posted.toLocaleDateString("en-US", { weekday: "short" });
+
+        if (now.getFullYear() === posted.getFullYear()) {
+            return posted.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+        }
+
+        return posted.getFullYear().toString();
+    }
+
+
+    function formatCommentTimestamp(timestamp) {
+        const now = new Date();
+        const posted = new Date(timestamp);
+        const diffMs = now - posted;
+
+        const diffMinutes = Math.floor(diffMs / 60000);
+        if (diffMinutes < 60) return `${diffMinutes}m`;
+
+        const diffHours = Math.floor(diffMinutes / 60);
+        if (diffHours < 24) return `${diffHours}h`;
+
+        const diffDays = Math.floor(diffHours / 24);
+        if (diffDays < 7) return posted.toLocaleDateString("en-US", { weekday: "short" });
+
+        if (now.getFullYear() === posted.getFullYear()) {
+            return posted.toLocaleDateString("en-US", { month: "short" });
+        }
+
+        return posted.getFullYear().toString();
+    }
+
 
     return (
         <div className="post">
             <div className="post-header">
-                <img src="/avatar-placeholder.png" alt="User" />
-                <div>
-                    <h4>{author ? `${author.firstName} ${author.lastName}` : "Unknown User"}</h4>
-                    <p>
-                        {new Date(post.createdAt).toLocaleString()} — <span style={{ color: "#2563eb" }}>#{hub?.name}</span>
+                <img src={author?.profileImage || "/mock-avatars/Gigiaudi.png"} alt="User" />
+                <div className="post-meta">
+                    <h4>{author ? `${author.firstName} ${author.lastName}` : "Anonymous"}</h4>
+                    <p className="post-timestamp">
+                        {formatPostTimestamp(post.createdAt)}
+                        <button className="hub-button" onClick={() => alert(`Redirect to hub ${hub?.id}`)}>
+                            {hub?.name}
+                        </button>
                     </p>
+
                 </div>
             </div>
+
             <p className="post-content">{post.text}</p>
+
             <div className="post-actions">
-                <button onClick={() => setUpVotes(upVotes + 1)}>👍 {upVotes}</button>
-                <button onClick={() => setDownVotes(downVotes + 1)}>👎 {downVotes}</button>
+                <button
+                    onClick={handleLike}
+                    style={{ backgroundColor: vote === "like" ? "#bfdbfe" : "" }}
+                >
+                    👍 {upVotes}
+                </button>
+
+                <button
+                    onClick={handleDislike}
+                    style={{ backgroundColor: vote === "dislike" ? "#bfdbfe" : "" }}
+                >
+                    👎 {downVotes}
+                </button>
+
                 <button>💬 {comments.length} Comments</button>
             </div>
+
             {comments.length > 0 && (
                 <div className="comments-preview">
-                    {comments.map((c) => (
+                    {comments.slice(-visibleCount).map((c) => (
                         <p key={c.id} className="comment-text">
-                            <strong>{getUser(c.authorId)?.firstName}:</strong> {c.content}
+                            <strong>{getUser(c.authorId)?.firstName || "Anonymous"}:</strong> {c.content}
+                            <span className="comment-time"> | {formatCommentTimestamp(c.createdAt)}</span>
                         </p>
+
                     ))}
+                    {comments.length > 3 && visibleCount < comments.length && (
+                        <button
+                            className="show-more-comments"
+                            onClick={() => setVisibleCount(comments.length)}
+                        >
+                            Show all comments
+                        </button>
+                    )}
                 </div>
             )}
+
+            <div className="add-comment-section">
+                <input
+                    type="text"
+                    placeholder="Add a comment..."
+                    value={newComment}
+                    onChange={(e) => setNewComment(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && handleAddComment()}
+                />
+                <button onClick={handleAddComment}>Send</button>
+            </div>
         </div>
     );
 }

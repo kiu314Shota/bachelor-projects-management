@@ -1,0 +1,46 @@
+.specials-panel {
+    width: 250px;
+    background-color: white;
+    padding: 1.5rem;
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    position: sticky;
+    top: 0;
+    height: fit-content;
+}
+
+.specials-panel h3 {
+    font-size: 1.1rem;
+    color: #2563eb;
+    margin-bottom: 1rem;
+}
+
+.birthday-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.birthday-list li {
+    font-size: 0.95rem;
+    padding: 0.4rem 0;
+    color: #1f2937;
+}
+.special-button {
+    width: 100%;
+    background-color: #e8f0fe;
+    color: #1f2937;
+    border: none;
+    padding: 0.6rem 1rem;
+    margin-bottom: 0.4rem;
+    border-radius: 8px;
+    text-align: left;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.special-button:hover {
+    background-color: #2563eb;
+    color: white;
+}

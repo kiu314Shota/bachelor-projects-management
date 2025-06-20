@@ -1,10 +1,12 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import {useRef} from "react";
 import CreateUserPage from "./pages/register-page/CreateUserPage.jsx";
 import HomePage from "./pages/home-page/HomePage.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
 import PostsPage from "./pages/PostPage.jsx";
 
 export default function App() {
+
     return (
         <BrowserRouter>
             <Routes>

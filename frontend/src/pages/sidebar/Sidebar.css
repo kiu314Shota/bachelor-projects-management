@@ -6,16 +6,32 @@
     border-radius: 8px;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
+.sidebar-card {
+    background-color: white;
+    padding: 1.5rem;
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    width: 250px;
+}
 
 .profile-card {
     text-align: center;
+    margin-bottom: 1.5rem;
 }
 
 .profile-card img {
     width: 80px;
     height: 80px;
     border-radius: 50%;
+    object-fit: cover;
     margin-bottom: 0.5rem;
+    border: 2px solid #e5e7eb;
+}
+
+.hubs h4 {
+    margin-bottom: 0.5rem;
+    font-size: 1rem;
+    color: #1f2937;
 }
 
 .hubs ul {
@@ -28,4 +44,33 @@
     margin: 0.5rem 0;
     color: #2563eb;
     cursor: pointer;
+}
+.hubs-section {
+    margin-top: 1.5rem;
+}
+
+.hubs-section h4 {
+    color: #2563eb;
+    font-weight: 600;
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.hub-button-sidebar {
+    width: 100%;
+    background-color: #e8f0fe;              /* subtle blue background */
+    color: #1f2937;
+    border: none;
+    padding: 0.7rem 1rem;                   /* slightly taller */
+    margin-bottom: 0.4rem;
+    border-radius: 8px;
+    text-align: left;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.hub-button-sidebar:hover {
+    background-color: #2563eb;
+    color: white;
 }

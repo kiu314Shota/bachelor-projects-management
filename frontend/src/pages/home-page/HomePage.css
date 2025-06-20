@@ -32,25 +32,53 @@ body,html, #root {
 
 .feed {
     flex: 1;
-    max-width: 100%;
+    max-width: 960px;  /* was 800px */
     padding: 0 1rem;
+    margin: 0 auto;
 }
+
 
 .post-box {
     background-color: white;
-    padding: 1rem;
+    padding: 1.2rem;
     margin-bottom: 1.5rem;
-    border-radius: 8px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
 .post-box textarea {
-    width: 97%;
-    padding: 0.5rem;
-    border: 1px solid #ccc;
-    border-radius: 6px;
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 12px;
     resize: none;
-    margin-bottom: 0.5rem;
+    font-size: 1rem;
+    color: #1f2937;
+    background-color: #f9fafb;
+    margin-bottom: 1rem;
+    transition: box-shadow 0.2s ease;
+    box-sizing: border-box;       /* ✅ Fixes sizing overflow */
+    display: block;               /* ✅ Ensures it stays inside flex containers */
+}
+
+
+.post-box textarea:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.4);
+}
+
+.post-options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.anon-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.9rem;
+    color: #374151;
 }
 
 .post-box button {
@@ -62,3 +90,70 @@ body,html, #root {
     cursor: pointer;
 }
 
+
+.post-options button {
+    background-color: #3b82f6;
+    color: white;
+    padding: 0.5rem 1.2rem;
+    border: none;
+    border-radius: 9999px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.post-options button:hover {
+    background-color: #60a5fa;
+}
+/* Switch container */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 42px;
+    height: 24px;
+}
+
+/* Hide default checkbox */
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+/* Track */
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #d1d5db; /* gray-300 */
+    border-radius: 9999px;
+    transition: background-color 0.3s ease;
+}
+
+/* Knob */
+.slider::before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    border-radius: 50%;
+    transition: transform 0.3s ease;
+}
+
+/* On: blue track */
+.switch input:checked + .slider {
+    background-color: #3b82f6; /* Our blue */
+}
+
+/* On: move knob to the right */
+.switch input:checked + .slider::before {
+    transform: translateX(18px);
+}
+.anon-label {
+    color: #4b5563; /* gray-600 */
+}
