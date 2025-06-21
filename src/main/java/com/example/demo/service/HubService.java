@@ -1,6 +1,7 @@
 package com.example.demo.service;
 
 import com.example.demo.domain.Hub;
+import com.example.demo.domain.HubJoinRequest;
 import com.example.demo.domain.User;
 import com.example.demo.repository.HubRepository;
 import jakarta.transaction.Transactional;
@@ -13,14 +14,15 @@ import java.util.stream.StreamSupport;
 
 @Service
 @RequiredArgsConstructor
-
 public class HubService {
 
     private final HubRepository repository;
+    private final HubJoinRequestService joinRequestService;
 
     public Hub save(Hub entity) {
         return repository.save(entity);
     }
+
     @Transactional
     public Hub createHubByUser(Hub hub, User creator) {
         hub.setDeleted(false);
@@ -43,6 +45,41 @@ public class HubService {
         repository.save(hub);
     }
 
+    @Transactional
+    public void approveJoinRequest(Hub hub, User admin, User requestSender) {
+        if (!isAdminOfHub(admin, hub)) {
+            throw new SecurityException("Only admins can approve join requests.");
+        }
+
+        addMember(hub, requestSender);
+
+        joinRequestService.findBySender(requestSender).stream()
+                .filter(r -> r.getTargetHub().equals(hub))
+                .findFirst()
+                .ifPresent(r -> joinRequestService.deleteRequest(r.getId()));
+    }
+    @Transactional
+    public void makeHubPublic(Long hubId, Long adminId) {
+        Hub hub = repository.findById(hubId)
+                .orElseThrow(() -> new IllegalArgumentException("Hub not found"));
+        if (!isAdminOfHubById(adminId, hub)) {
+            throw new SecurityException("Only admins can change visibility");
+        }
+        hub.setPublic();
+        repository.save(hub);
+    }
+
+    @Transactional
+    public void makeHubPrivate(Long hubId, Long adminId) {
+        Hub hub = repository.findById(hubId)
+                .orElseThrow(() -> new IllegalArgumentException("Hub not found"));
+        if (!isAdminOfHubById(adminId, hub)) {
+            throw new SecurityException("Only admins can change visibility");
+        }
+        hub.setPrivate();
+        repository.save(hub);
+    }
+
 
     public List<Hub> findHubsByAdmin(User admin) {
         return findAllActive().stream()
@@ -56,14 +93,14 @@ public class HubService {
                 .toList();
     }
 
-
-    public  Iterable<Hub> saveAll(Iterable<Hub> entities) {
+    public Iterable<Hub> saveAll(Iterable<Hub> entities) {
         return repository.saveAll(entities);
     }
 
     public Optional<Hub> findById(Long aLong) {
         return repository.findById(aLong);
     }
+
     public Optional<Hub> findActiveById(Long id) {
         return repository.findById(id).filter(hub -> !hub.isDeleted());
     }
@@ -75,6 +112,7 @@ public class HubService {
     public Iterable<Hub> findAll() {
         return repository.findAll();
     }
+
     public List<Hub> findPublicHubs() {
         return findAllActive().stream()
                 .filter(Hub::isPublic)
@@ -84,18 +122,23 @@ public class HubService {
     public boolean isAdminOfHub(User user, Hub hub) {
         return hub.getAdmins().contains(user);
     }
+
     public boolean isAdminOfHubById(Long userId, Hub hub) {
         return hub.getAdmins().stream().anyMatch(admin -> admin.getId().equals(userId));
     }
+
     public boolean isMemberOfHub(User user, Hub hub) {
         return hub.getMembers().contains(user);
     }
+
     public boolean isActiveHub(Hub hub) {
         return !hub.isDeleted();
     }
+
     public Iterable<Hub> findAllById(Iterable<Long> longs) {
         return repository.findAllById(longs);
     }
+
     public List<Hub> findAllActive() {
         return StreamSupport.stream(repository.findAll().spliterator(), false)
                 .filter(hub -> !hub.isDeleted())
@@ -111,19 +154,17 @@ public class HubService {
         repository.softDeleteById(id);
     }
 
-
     @Transactional
     public void removeMember(Hub hub, User user) {
         hub.getMembers().remove(user);
         user.getMemberHubs().remove(hub);
         repository.save(hub);
     }
+
     @Transactional
     public void leaveHubAsAdmin(Hub hub, User user) {
         hub.getAdmins().remove(user);
         user.getAdminHubs().remove(hub);
         repository.save(hub);
     }
-
-
 }

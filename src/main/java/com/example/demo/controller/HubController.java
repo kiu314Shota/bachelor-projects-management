@@ -9,6 +9,7 @@ import com.example.demo.service.UserService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -64,6 +65,18 @@ public class HubController {
         Hub hub = hubService.findActiveById(hubId).orElseThrow();
         User user = userService.findById(userId).orElseThrow();
         hubService.addAdmin(hub, user);
+    }
+
+    @PutMapping("/{hubId}/make-public")
+    public ResponseEntity<String> makeHubPublic(@PathVariable Long hubId, @RequestParam Long adminId) {
+        hubService.makeHubPublic(hubId, adminId);
+        return ResponseEntity.ok("Hub is now public");
+    }
+
+    @PutMapping("/{hubId}/make-private")
+    public ResponseEntity<String> makeHubPrivate(@PathVariable Long hubId, @RequestParam Long adminId) {
+        hubService.makeHubPrivate(hubId, adminId);
+        return ResponseEntity.ok("Hub is now private");
     }
 
     @DeleteMapping("/{hubId}/remove-member")
