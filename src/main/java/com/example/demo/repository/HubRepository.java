@@ -6,9 +6,14 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 
+import java.util.Optional;
+
 public interface HubRepository extends CrudRepository<Hub,Long> {
 
     @Modifying
     @Query("UPDATE Hub h SET h.isDeleted = true WHERE h.id = :id")
     void softDeleteById(@Param("id") Long id);
+
+    Optional<Hub> findByNameIgnoreCase(String name);
+
 }

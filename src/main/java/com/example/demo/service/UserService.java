@@ -28,7 +28,7 @@ public class UserService {
         return repository.findById(id);
     }
     public Optional<User> findByEmail(String email) {
-        return Optional.ofNullable(repository.findByEmail(email));
+        return Optional.ofNullable(repository.findByEmail(email)).get();
     }
 
     public Iterable<User> listActiveUsers() {

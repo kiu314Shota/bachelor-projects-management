@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
+import java.util.Optional;
 
 @Repository
 public interface UserRepository extends CrudRepository<User, Long> {
@@ -22,6 +23,7 @@ public interface UserRepository extends CrudRepository<User, Long> {
     @Query("UPDATE User u SET u.isDeleted = true WHERE u.id = :id")
     void softDeleteById(@Param("id") Long id);
 
-    User findByEmail(String email);
+
+    Optional<User> findByEmail(String email);
     Iterable<User> findAllByDateOfBirth(LocalDate dateOfBirth); // ✅ სწორი
 }

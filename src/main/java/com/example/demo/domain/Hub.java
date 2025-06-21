@@ -12,7 +12,7 @@ import java.util.List;
 @Data
 public class Hub {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "hub_seq")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @SequenceGenerator(name = "hub_seq", sequenceName = "hub_id_seq", allocationSize = 1)    private Long id;
 
     private String name;
