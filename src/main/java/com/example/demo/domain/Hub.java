@@ -32,4 +32,12 @@ public class Hub {
     private List<User> members =new ArrayList<>();
 
 
+
+    public void setPrivate() {
+        this.isPublic = false;
+    }
+
+    public void setPublic() {
+        this.isPublic = true;
+    }
 }

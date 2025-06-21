@@ -72,7 +72,6 @@ public class User {
     @ManyToMany(mappedBy = "downVotedUsers")
     private Set<Post> dislikedPosts = new HashSet<>();
 
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -80,6 +79,7 @@ public class User {
         User user = (User) o;
         return id != null && id.equals(user.id);
     }
+
 
     @Override
     public int hashCode() {

@@ -40,6 +40,7 @@ public class InitialDataLoader implements CommandLineRunner {
             anon.setPasswordHash("anon123");
             anon.setDateOfBirth(LocalDate.of(2000, 1, 1));
             anon.setYearOfStudy(YearOfStudy.FRESHMAN);
+            anon.setProfilePictureUrl("https://i.ibb.co/xKqjpfJF/download.png");
             anon.setRole(Role.USER);
             //აქ ანონიმურის ფოტა დასამატებელი
             anon.setProfilePictureUrl("");

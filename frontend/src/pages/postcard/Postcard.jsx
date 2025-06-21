@@ -21,7 +21,7 @@ export default function PostCard({ post, getUser, getHub, getComments, currentUs
                 const res = await api.get(`/posts/${post.id}/reaction`, {
                     params: { userId: currentUserId }
                 });
-                setVote(res.data); // "LIKE", "DISLIKE", or null
+                setVote(res.data);
             } catch (err) {
                 console.error("Reaction fetch failed", err);
             }

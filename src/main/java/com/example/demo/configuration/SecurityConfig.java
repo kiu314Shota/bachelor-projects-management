@@ -37,9 +37,10 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/auth/login",
                                 "/users", "/users/",
-                                "/posts", // ← ეს დაამატე რომ POST /posts არ დაიბლოკოს
+                                "/posts",
                                 "/swagger-ui/**",
-                                "/v3/api-docs/**"
+                                "/v3/api-docs/**",
+                                "/hub-join-requests/send"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
