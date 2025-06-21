@@ -1,11 +1,16 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import "./Navbar.css";
+import { useNavigate, useLocation } from "react-router-dom";
 
 export default function Navbar() {
     const [searchTerm, setSearchTerm] = useState("");
     const [showHubDropdown, setShowHubDropdown] = useState(false);
     const navigate = useNavigate();
+    const location = useLocation();
+
+    const handleHomeClick = () => {
+        navigate("/homePage");
+    };
 
     const handleCreatePost = () => {
         navigate("/");
@@ -31,12 +36,12 @@ export default function Navbar() {
     return (
         <nav className="navbar">
             <div className="navbar-left">
-                <div className="branding">
+                <div className="branding" onClick={handleHomeClick} style={{ cursor: "pointer" }}>
                     <div className="logo">KIUX</div>
                     <span className="tagline">Your Campus Feed</span>
                 </div>
                 <div className="nav-links">
-                    <button>Home</button>
+                    <button onClick={handleHomeClick}>Home</button>
                     <div className="hub-dropdown-wrapper">
                         <button
                             className="hubs-button"

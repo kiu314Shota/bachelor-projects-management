@@ -1,0 +1,32 @@
+.hub-right-panel {
+    width: 250px;
+    background-color: white;
+    padding: 1.5rem;
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    position: relative;
+    top: 0;
+    height: fit-content;
+    font-family: sans-serif;
+}
+
+.hub-right-panel h3 {
+    font-size: 1.1rem;
+    color: #2563eb;
+    margin-bottom: 0.75rem;
+    border-bottom: 1px solid #e5e7eb;
+    padding-bottom: 0.25rem;
+}
+
+.hub-right-panel ul {
+    list-style: none;
+    padding: 0;
+    margin-bottom: 1.5rem;
+}
+
+.hub-right-panel li {
+    font-size: 0.95rem;
+    padding: 0.4rem 0;
+    color: #1f2937;
+    border-bottom: 1px solid #f3f4f6;
+}

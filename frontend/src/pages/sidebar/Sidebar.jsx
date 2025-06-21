@@ -1,22 +1,33 @@
 import "./Sidebar.css";
 import { useState, useEffect } from "react";
 import api from "../axios"; // Make sure api is imported
+import { Link } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
-function HubButton({ hub, currentUserId }) {
+
+function HubButton({ hub, currentUserId, isActive = false }) {
     const isPublic = hub.public;
     const emoji = isPublic ? "🌐" : "🔒";
-    const hoverClass = isPublic ? "public-hover" : "private-hover";
-
     const isUserInHub = (hub.memberIds?.includes(currentUserId) || hub.adminIds?.includes(currentUserId));
     const [isHovered, setIsHovered] = useState(false);
 
-    const label = isHovered && !isUserInHub
+    const label = isHovered && !isUserInHub && !isActive
         ? isPublic ? "Join" : "Request to Join"
         : `${emoji} ${hub.name}`;
 
+    const hoverClass = isPublic ? "public-hover" : "private-hover";
+
+    const handleHubClick = (id) => {
+        if (activeHub?.id === id || location.pathname.startsWith("/hubs")) {
+            navigate("/");
+        } else {
+            navigate(`/hubs/${id}`);
+        }
+    };
+
     return (
         <button
-            className={`hub-button-sidebar ${hoverClass}`}
+            className={`hub-button-sidebar ${hoverClass} ${isActive ? "active-hub-button" : ""}`}
             title={isPublic ? "Public Hub" : "Private Hub"}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
@@ -26,7 +37,8 @@ function HubButton({ hub, currentUserId }) {
     );
 }
 
-export default function Sidebar({ currentUserId, hubs, users, setHubs, setIsCreateHubModalOpen }) {
+
+export default function Sidebar({ currentUserId, hubs, users, setHubs, setIsCreateHubModalOpen, activeHub = null }) {
     const user = users.find((u) => u.id === currentUserId);
     const userHubs = hubs.filter(h =>
         (Array.isArray(h.memberIds) && h.memberIds.includes(currentUserId)) ||
@@ -38,7 +50,15 @@ export default function Sidebar({ currentUserId, hubs, users, setHubs, setIsCrea
         (!h.memberIds?.includes(currentUserId)) &&
         (!h.adminIds?.includes(currentUserId))
     );
-
+    const location = useLocation();
+    const navigate = useNavigate();
+    const handleHubClick = (id) => {
+        if (activeHub?.id === id || location.pathname.startsWith("/hubs")) {
+            navigate("/homePage");
+        } else {
+            navigate(`/hubs/${id}`);
+        }
+    };
     const [visibleUserHubs, setVisibleUserHubs] = useState(5);
     const [visibleSuggestedHubs, setVisibleSuggestedHubs] = useState(5);
 
@@ -112,15 +132,32 @@ export default function Sidebar({ currentUserId, hubs, users, setHubs, setIsCrea
     return (
         <aside className="sidebar sidebar-card">
             <div className="profile-card">
-                <img src={user?.profilePictureUrl || "/avatar-placeholder.png"} alt="Profile" />
-                <h3>Welcome, {user.firstName}!</h3>
+                {activeHub? (
+                    <h3>{activeHub.name}</h3>
+                ) : (
+                    <>
+                        <img src={user?.profilePictureUrl || "/avatar-placeholder.png"} alt="Profile" />
+                        <h3>Welcome, {user.firstName}!</h3>
+                    </>
+                )}
             </div>
+
 
             <div className="hubs-section">
                 <h4>Your Hubs</h4>
                 {displayedUserHubs.map(hub => (
-                    <HubButton key={hub.id} hub={hub} currentUserId={currentUserId} />
+                    <div
+                        key={hub.id}
+                        className="hub-link-wrapper"
+                        onClick={() => handleHubClick(hub.id)}
+                        style={{ cursor: "pointer" }}
+                    >
+                        <HubButton hub={hub} currentUserId={currentUserId} isActive={activeHub?.id === hub.id} />
+                    </div>
                 ))}
+
+
+
                 {userHubs.length > 5 && (
                     <button className="toggle-button" onClick={handleToggleUserHubs}>
                         {visibleUserHubs >= userHubs.length
@@ -133,8 +170,17 @@ export default function Sidebar({ currentUserId, hubs, users, setHubs, setIsCrea
             <div className="hubs-section">
                 <h4>Suggested Hubs</h4>
                 {displayedSuggestedHubs.map(hub => (
-                    <HubButton key={hub.id} hub={hub} currentUserId={currentUserId} />
+                    <div
+                        key={hub.id}
+                        className="hub-link-wrapper"
+                        onClick={() => handleHubClick(hub.id)}
+                        style={{ cursor: "pointer" }}
+                    >
+                        <HubButton hub={hub} currentUserId={currentUserId} isActive={activeHub?.id === hub.id} />
+                    </div>
                 ))}
+
+
                 {suggestedHubs.length > 5 && (
                     <button className="toggle-button" onClick={handleToggleSuggestedHubs}>
                         {visibleSuggestedHubs >= suggestedHubs.length

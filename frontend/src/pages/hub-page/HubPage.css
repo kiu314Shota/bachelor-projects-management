@@ -1,0 +1,28 @@
+.hub-layout {
+    display: flex;
+    padding: 1rem;
+    gap: 2rem;
+}
+
+.hub-main {
+    flex: 1;
+    max-width: 700px;
+}
+
+.hub-main textarea {
+    width: 100%;
+    min-height: 80px;
+    margin-bottom: 0.5rem;
+    padding: 0.5rem;
+    border-radius: 12px;
+    border: 1px solid #ccc;
+}
+
+.hub-main button {
+    background-color: #2563eb;
+    color: white;
+    padding: 0.4rem 1rem;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}

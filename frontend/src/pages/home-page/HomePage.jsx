@@ -16,13 +16,7 @@ export default function HomePage() {
     const [newPostText, setNewPostText] = useState("");
     const [anonymous, setAnonymous] = useState(false);
     const [isCreateHubModalOpen, setIsCreateHubModalOpen] = useState(false);
-    const hubId = 1;
-
     const postBoxRef = useRef(null);
-    useEffect(() => {
-        console.log("Loaded user ID:", currentUserId);
-        console.log("Loaded hubs:", hubs);
-    }, [currentUserId, hubs]);
 
     useEffect(() => {
         window._scrollToPostBox = () => {
@@ -34,24 +28,42 @@ export default function HomePage() {
         const fetchInitialData = async () => {
             try {
                 const token = localStorage.getItem("token");
-                if (token) {
-                    const decoded = jwtDecode(token);
-                    if (decoded.userId) setCurrentUserId(decoded.userId);
-                }
-                const hubsRes = await api.get(`/hubs`);
-                setHubs(hubsRes.data || []);
+                if (!token) return;
 
-                const [hubRes, postsRes, usersRes, commentsRes] = await Promise.all([
+                const decoded = jwtDecode(token);
+                const userId = decoded.userId;
+                setCurrentUserId(userId);
+
+                const [hubsRes, usersRes, commentsRes] = await Promise.all([
                     api.get(`/hubs`),
-                    api.get(`/posts/hub/${hubId}`),
                     api.get(`/users`),
                     api.get(`/comments`)
                 ]);
 
-                setHubs(hubRes.data || []);
-                setPosts(postsRes.data);
-                setUsers(usersRes.data);
-                setComments(commentsRes.data);
+                const allHubs = hubsRes.data || [];
+                const allUsers = usersRes.data || [];
+                const allComments = commentsRes.data || [];
+
+                setHubs(allHubs);
+                setUsers(allUsers);
+                setComments(allComments);
+
+                const joinedHubIds = allHubs
+                    .filter(h => h.memberIds?.includes(userId) || h.adminIds?.includes(userId))
+                    .map(h => h.id);
+
+                const allPostsRes = await Promise.all(
+                    joinedHubIds.map(hid => api.get(`/posts/hub/${hid}`))
+                );
+                const combinedPosts = allPostsRes.flatMap(res => res.data);
+
+                // ✅ Sort newest first
+                const sortedPosts = combinedPosts.sort((a, b) =>
+                    new Date(b.createdAt) - new Date(a.createdAt)
+                );
+
+                setPosts(sortedPosts);
+
             } catch (err) {
                 console.error("მონაცემების წამოღება ვერ მოხერხდა", err);
             }
@@ -66,7 +78,7 @@ export default function HomePage() {
         try {
             const payload = {
                 text: newPostText,
-                hubId,
+                hubId: 1, // default post to General hub
                 authorId: anonymous ? 1 : currentUserId,
             };
 
@@ -85,7 +97,7 @@ export default function HomePage() {
             const res = await api.post("/comments", {
                 content,
                 postId,
-                hubId,
+                hubId: 1, // assuming comments also default to General hub
                 authorId: isAnonymous ? 1 : currentUserId
             });
             setComments(prev => [...prev, res.data]);

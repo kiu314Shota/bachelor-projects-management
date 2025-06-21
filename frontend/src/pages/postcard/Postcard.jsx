@@ -1,5 +1,7 @@
 import { useState } from "react";
 import "./Postcard.css";
+import { Link } from "react-router-dom";
+
 
 export default function PostCard({ post, getUser, getHub, getComments, currentUserId, onCommentSubmit }) {
     const author = getUser(post.authorId);
@@ -97,16 +99,20 @@ export default function PostCard({ post, getUser, getHub, getComments, currentUs
 
     return (
         <div className="post">
-            <div className="post-header">
-                <img src={author?.profilePictureUrl || "/mock-avatars/Gigiaudi.png"} alt="User" />
-                <div className="post-meta">
-                    <h4>{author ? `${author.firstName} ${author.lastName}` : "Anonymous"}</h4>
-                    <p className="post-timestamp">
-                        {formatPostTimestamp(post.createdAt)}
-                        <button className="hub-button" onClick={() => alert(`Redirect to hub ${hub?.id}`)}>
-                            {hub?.name}
-                        </button>
-                    </p>
+            <div className="post">
+                <div className="post-header">
+                    <img src={author?.profilePictureUrl || "/mock-avatars/Gigiaudi.png"} alt="User" />
+                    <div className="post-meta">
+                        <h4>{author ? `${author.firstName} ${author.lastName}` : "Anonymous"}</h4>
+                        <p className="post-timestamp">
+                            {formatPostTimestamp(post.createdAt)}
+                            {hub && (
+                                <Link to={`/hubs/${hub.id}`} className="hub-button-link">
+                                    {hub.name}
+                                </Link>
+                            )}
+                        </p>
+                    </div>
                 </div>
             </div>
 
