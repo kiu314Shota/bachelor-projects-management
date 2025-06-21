@@ -15,6 +15,7 @@ export default function HomePage() {
     const [currentUserId, setCurrentUserId] = useState(null);
     const [newPostText, setNewPostText] = useState("");
     const [anonymous, setAnonymous] = useState(false);
+    const [isCreateHubModalOpen, setIsCreateHubModalOpen] = useState(false);
     const hubId = 1;
 
     const postBoxRef = useRef(null);
@@ -103,7 +104,13 @@ export default function HomePage() {
         <div className="home-container">
             <Navbar />
             <div className="main-content">
-                <Sidebar currentUserId={currentUserId} hubs={hubs} users={users} />
+                <Sidebar
+                    currentUserId={currentUserId}
+                    hubs={hubs}
+                    users={users}
+                    setHubs={setHubs}
+                    setIsCreateHubModalOpen={setIsCreateHubModalOpen}
+                />
                 <section className="feed">
                     <div className="post-box" ref={postBoxRef}>
                         <textarea
@@ -120,17 +127,19 @@ export default function HomePage() {
                         />
 
                         <div className="post-options">
-                            <div className="anon-toggle">
-                                <label className="switch">
-                                    <input
-                                        type="checkbox"
-                                        checked={anonymous}
-                                        onChange={() => setAnonymous(!anonymous)}
-                                    />
-                                    <span className="slider" />
-                                </label>
-                                <span className="anon-label">Post anonymously</span>
-                            </div>
+                            {!isCreateHubModalOpen && (
+                                <div className="anon-toggle">
+                                    <label className="switch">
+                                        <input
+                                            type="checkbox"
+                                            checked={anonymous}
+                                            onChange={() => setAnonymous(!anonymous)}
+                                        />
+                                        <span className="slider" />
+                                    </label>
+                                    <span className="anon-label">Post anonymously</span>
+                                </div>
+                            )}
                             <button onClick={handlePostSubmit}>Post</button>
                         </div>
                     </div>
