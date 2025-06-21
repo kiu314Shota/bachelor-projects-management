@@ -1,6 +1,10 @@
 import "./HubRightPanel.css";
 
-export default function HubRightPanel({ adminUsers, memberUsers }) {
+export default function HubRightPanel({ adminUsers, memberUsers, currentHubId }) {
+    const filteredMembers = memberUsers?.filter(
+        user => !(currentHubId === 1 && user.id === 1)
+    );
+
     return (
         <div className="hub-right-panel">
             <h3>Admins</h3>
@@ -15,8 +19,8 @@ export default function HubRightPanel({ adminUsers, memberUsers }) {
             )}
 
             <h3>Members</h3>
-            {memberUsers?.length ? (
-                memberUsers.map((user) => (
+            {filteredMembers?.length ? (
+                filteredMembers.map((user) => (
                     <button key={user.id} className="hub-button-sidebar public-hover" disabled>
                         {user.firstName} {user.lastName}
                     </button>

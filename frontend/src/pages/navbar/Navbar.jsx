@@ -1,6 +1,7 @@
 import { useState } from "react";
 import "./Navbar.css";
 import { useNavigate, useLocation } from "react-router-dom";
+import api from "../axios.js";
 
 export default function Navbar({ currentUserId, hubs = [] }) {
     const [searchTerm, setSearchTerm] = useState("");
@@ -20,16 +21,32 @@ export default function Navbar({ currentUserId, hubs = [] }) {
         }, 300);
     };
 
-
-
-    const handleSearch = () => {
+    const handleSearch = async () => {
         const target = hubs.find(h => h.name.toLowerCase() === searchTerm.trim().toLowerCase());
-        if (target) {
+        if (!target) return alert("No matching hub found.");
+
+        const isJoined = target.memberIds?.includes(currentUserId) || target.adminIds?.includes(currentUserId);
+
+        if (isJoined) {
             navigate(`/hubs/${target.id}`);
         } else {
-            alert("No matching hub found.");
+            const confirmJoin = window.confirm(`You are not a member of ${target.name}. Do you want to join?`);
+            if (!confirmJoin) return;
+
+            try {
+                await api.post(`/hubs/${target.id}/add-member`, null, {
+                    params: { userId: currentUserId }
+                });
+                setTimeout(() => {
+                    navigate(`/hubs/${target.id}`);
+                }, 100);
+            } catch (err) {
+                console.error("Join via search failed", err);
+                alert("Failed to join hub.");
+            }
         }
     };
+
 
 
     const handleKeyDown = (e) => {

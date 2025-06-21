@@ -53,12 +53,13 @@ export default function Sidebar({ currentUserId, hubs, users, setHubs, setIsCrea
     const location = useLocation();
     const navigate = useNavigate();
     const handleHubClick = (id) => {
-        if (activeHub?.id === id || location.pathname.startsWith("/hubs")) {
+        if (activeHub?.id === id && location.pathname === `/hubs/${id}`) {
             navigate("/homePage");
         } else {
             navigate(`/hubs/${id}`);
         }
     };
+
     const [visibleUserHubs, setVisibleUserHubs] = useState(5);
     const [visibleSuggestedHubs, setVisibleSuggestedHubs] = useState(5);
 
@@ -132,14 +133,17 @@ export default function Sidebar({ currentUserId, hubs, users, setHubs, setIsCrea
     return (
         <aside className="sidebar sidebar-card">
             <div className="profile-card">
-                {activeHub? (
-                    <h3>{activeHub.name}</h3>
+                {activeHub ? (
+                    <div className="current-hub-info">
+                        <h2>{activeHub.name}</h2>
+                        {activeHub.description && (
+                            <p className="hub-description">{activeHub.description}</p>
+                        )}
+                    </div>
                 ) : (
-                    <>
-                        <img src={user?.profilePictureUrl || "/avatar-placeholder.png"} alt="Profile" />
-                        <h3>Welcome, {user.firstName}!</h3>
-                    </>
+                    <h2>Welcome, {user?.firstName}</h2>
                 )}
+
             </div>
 
 
@@ -169,17 +173,41 @@ export default function Sidebar({ currentUserId, hubs, users, setHubs, setIsCrea
 
             <div className="hubs-section">
                 <h4>Suggested Hubs</h4>
-                {displayedSuggestedHubs.map(hub => (
-                    <div
-                        key={hub.id}
-                        className="hub-link-wrapper"
-                        onClick={() => handleHubClick(hub.id)}
-                        style={{ cursor: "pointer" }}
-                    >
-                        <HubButton hub={hub} currentUserId={currentUserId} isActive={activeHub?.id === hub.id} />
-                    </div>
-                ))}
 
+                {displayedSuggestedHubs.length > 0 ? (
+                    displayedSuggestedHubs.map(hub => (
+                        <div
+                            key={hub.id}
+                            className="hub-link-wrapper"
+                            style={{ cursor: "pointer" }}
+                            onClick={async () => {
+                                const isJoined = hub.memberIds?.includes(currentUserId) || hub.adminIds?.includes(currentUserId);
+                                if (isJoined) {
+                                    navigate(`/hubs/${hub.id}`);
+                                } else {
+                                    const confirmJoin = window.confirm(`You are not a member of ${hub.name}. Do you want to join?`);
+                                    if (!confirmJoin) return;
+
+                                    try {
+                                        await api.post(`/hubs/${hub.id}/add-member`, null, {
+                                            params: { userId: currentUserId }
+                                        });
+                                        setTimeout(() => navigate(`/hubs/${hub.id}`), 100);
+                                    } catch (err) {
+                                        console.error("Join via sidebar failed", err);
+                                        alert("Failed to join hub.");
+                                    }
+                                }
+                            }}
+                        >
+                            <HubButton hub={hub} currentUserId={currentUserId} isActive={activeHub?.id === hub.id} />
+                        </div>
+                    ))
+                ) : (
+                    <p style={{ color: "#6b7280", fontSize: "0.9rem", marginTop: "0.5rem" }}>
+                        No suggested hubs available.
+                    </p>
+                )}
 
                 {suggestedHubs.length > 5 && (
                     <button className="toggle-button" onClick={handleToggleSuggestedHubs}>
@@ -189,6 +217,7 @@ export default function Sidebar({ currentUserId, hubs, users, setHubs, setIsCrea
                     </button>
                 )}
             </div>
+
 
             <button className="create-hub-button" onClick={() => {
                 setShowCreateHub(true);

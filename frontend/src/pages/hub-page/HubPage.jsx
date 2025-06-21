@@ -7,7 +7,7 @@ import PostCard from "../postcard/Postcard";
 import api from "../axios";
 import { jwtDecode } from "jwt-decode";
 import "../home-page/HomePage.css"; // reuse HomePage styles
-
+import "./HubPage.css"; // specific styles for HubPage
 export default function HubPage() {
     const { hubId } = useParams();
     const [hub, setHub] = useState(null);
@@ -21,6 +21,7 @@ export default function HubPage() {
     const postBoxRef = useRef(null);
     const adminUsers = users.filter(u => hub.adminIds?.includes(u.id));
     const memberUsers = users.filter(u => hub.memberIds?.includes(u.id));
+    const [isCreateHubModalOpen, setIsCreateHubModalOpen] = useState(false);
 
     useEffect(() => {
         const fetchAll = async () => {
@@ -102,9 +103,10 @@ export default function HubPage() {
                     hubs={hubs}
                     users={users}
                     setHubs={setHubs}
-                    setIsCreateHubModalOpen={() => {}}
+                    setIsCreateHubModalOpen={setIsCreateHubModalOpen} // ✅ pass setter
                     activeHub={hub}
                 />
+
 
                 <section className="feed">
                     <div className="post-box" ref={postBoxRef}>
@@ -122,17 +124,21 @@ export default function HubPage() {
                         />
 
                         <div className="post-options">
-                            <div className="anon-toggle">
-                                <label className="switch">
-                                    <input
-                                        type="checkbox"
-                                        checked={anonymous}
-                                        onChange={() => setAnonymous(!anonymous)}
-                                    />
-                                    <span className="slider" />
-                                </label>
-                                <span className="anon-label">Post anonymously</span>
-                            </div>
+                            {!isCreateHubModalOpen && (
+                                <div className="anon-toggle">
+                                    <label className="switch">
+                                        <input
+                                            type="checkbox"
+                                            checked={anonymous}
+                                            onChange={() => setAnonymous(!anonymous)}
+                                        />
+                                        <span className="slider" />
+                                    </label>
+                                    <span className="anon-label">Post anonymously</span>
+                                </div>
+                            )}
+
+
                             <button onClick={handlePostSubmit}>Post</button>
                         </div>
                     </div>
@@ -150,7 +156,11 @@ export default function HubPage() {
                         />
                     ))}
                 </section>
-                <HubRightPanel adminUsers={adminUsers} memberUsers={memberUsers} />
+                <HubRightPanel
+                    adminUsers={adminUsers}
+                    memberUsers={memberUsers}
+                    currentHubId={hub.id}
+                />
             </div>
         </div>
     );
