@@ -1,22 +1,29 @@
 import "./HubRightPanel.css";
 
-export default function HubRightPanel({ hub }) {
-    if (!hub) return null;
-
+export default function HubRightPanel({ adminUsers, memberUsers }) {
     return (
         <div className="hub-right-panel">
             <h3>Admins</h3>
-            <ul>
-                {hub.admins?.map(admin => (
-                    <li key={admin.id}>{admin.firstName} {admin.lastName}</li>
-                ))}
-            </ul>
+            {adminUsers?.length ? (
+                adminUsers.map((user) => (
+                    <button key={user.id} className="hub-button-sidebar public-hover" disabled>
+                        👑 {user.firstName} {user.lastName}
+                    </button>
+                ))
+            ) : (
+                <p>No admins listed.</p>
+            )}
+
             <h3>Members</h3>
-            <ul>
-                {hub.members?.map(member => (
-                    <li key={member.id}>{member.firstName} {member.lastName}</li>
-                ))}
-            </ul>
+            {memberUsers?.length ? (
+                memberUsers.map((user) => (
+                    <button key={user.id} className="hub-button-sidebar public-hover" disabled>
+                        {user.firstName} {user.lastName}
+                    </button>
+                ))
+            ) : (
+                <p>No members listed.</p>
+            )}
         </div>
     );
 }

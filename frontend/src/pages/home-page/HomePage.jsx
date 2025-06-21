@@ -120,7 +120,7 @@ export default function HomePage() {
 
     return (
         <div className="home-container">
-            <Navbar />
+            <Navbar currentUserId={currentUserId} hubs={hubs} />
             <div className="main-content">
                 <Sidebar
                     currentUserId={currentUserId}

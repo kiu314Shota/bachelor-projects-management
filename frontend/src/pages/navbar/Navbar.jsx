@@ -2,18 +2,19 @@ import { useState } from "react";
 import "./Navbar.css";
 import { useNavigate, useLocation } from "react-router-dom";
 
-export default function Navbar() {
+export default function Navbar({ currentUserId, hubs = [] }) {
     const [searchTerm, setSearchTerm] = useState("");
     const [showHubDropdown, setShowHubDropdown] = useState(false);
     const navigate = useNavigate();
     const location = useLocation();
-
+    const joinedHubs = hubs.filter(h => h.memberIds?.includes(currentUserId) || h.adminIds?.includes(currentUserId));
+    const top3Hubs = joinedHubs.slice(0, 3);
     const handleHomeClick = () => {
         navigate("/homePage");
     };
 
     const handleCreatePost = () => {
-        navigate("/");
+        navigate("/homePage");
         setTimeout(() => {
             window._scrollToPostBox?.();
         }, 300);
@@ -22,16 +23,23 @@ export default function Navbar() {
 
 
     const handleSearch = () => {
-        if (searchTerm.trim()) {
-            alert(`Searching for: ${searchTerm}`);
+        const target = hubs.find(h => h.name.toLowerCase() === searchTerm.trim().toLowerCase());
+        if (target) {
+            navigate(`/hubs/${target.id}`);
+        } else {
+            alert("No matching hub found.");
         }
     };
+
 
     const handleKeyDown = (e) => {
         if (e.key === "Enter") handleSearch();
     };
+    const handleLogout = () => {
+        localStorage.removeItem("token");
+        navigate("/login");
+    };
 
-    const mockHubs = ["Development", "Design", "AI Research"]; // Later replace with real hubs
 
     return (
         <nav className="navbar">
@@ -51,11 +59,16 @@ export default function Navbar() {
                         </button>
                         {showHubDropdown && (
                             <ul className="hub-dropdown">
-                                {mockHubs.map((hub, idx) => (
-                                    <li key={idx}>{hub}</li>
-                                ))}
+                                {top3Hubs.length > 0 ? (
+                                    top3Hubs.map(hub => (
+                                        <li key={hub.id} onClick={() => navigate(`/hubs/${hub.id}`)}>{hub.name}</li>
+                                    ))
+                                ) : (
+                                    <li>No joined hubs</li>
+                                )}
                             </ul>
                         )}
+
                     </div>
                 </div>
             </div>
@@ -71,7 +84,7 @@ export default function Navbar() {
                 />
                 <button onClick={handleSearch}>Search</button>
                 <button onClick={handleCreatePost}>Create Post</button>
-                <button>Logout</button>
+                <button onClick={handleLogout}>Logout</button>
             </div>
         </nav>
     );

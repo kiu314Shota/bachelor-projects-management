@@ -19,6 +19,8 @@ export default function HubPage() {
     const [newPostText, setNewPostText] = useState("");
     const [anonymous, setAnonymous] = useState(false);
     const postBoxRef = useRef(null);
+    const adminUsers = users.filter(u => hub.adminIds?.includes(u.id));
+    const memberUsers = users.filter(u => hub.memberIds?.includes(u.id));
 
     useEffect(() => {
         const fetchAll = async () => {
@@ -93,7 +95,7 @@ export default function HubPage() {
 
     return (
         <div className="home-container">
-            <Navbar />
+            <Navbar currentUserId={currentUserId} hubs={hubs} />
             <div className="main-content">
                 <Sidebar
                     currentUserId={currentUserId}
@@ -148,7 +150,7 @@ export default function HubPage() {
                         />
                     ))}
                 </section>
-                <HubRightPanel hub={hub} />
+                <HubRightPanel adminUsers={adminUsers} memberUsers={memberUsers} />
             </div>
         </div>
     );
