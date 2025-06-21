@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -22,13 +23,13 @@ public class Hub {
     private boolean isDeleted = false;
 
     @OneToMany(mappedBy = "hub", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Post> posts;
+    private List<Post> posts = new ArrayList<>() ;
 
     @ManyToMany(mappedBy = "adminHubs")
-    private List<User> admins;
+    private List<User> admins =new ArrayList<>();
 
     @ManyToMany(mappedBy = "memberHubs")
-    private List<User> members;
+    private List<User> members =new ArrayList<>();
 
 
 }

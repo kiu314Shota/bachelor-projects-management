@@ -13,7 +13,7 @@ import java.util.List;
 @Data
 public class Post {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "post_seq_gen")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @SequenceGenerator(name = "post_seq_gen", sequenceName = "post_seq", allocationSize = 1)
     private Long id;
 

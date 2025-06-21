@@ -1,7 +1,9 @@
 package com.example.demo.service;
 
+import com.example.demo.domain.Hub;
 import com.example.demo.domain.User;
 import com.example.demo.domain.YearOfStudy;
+import com.example.demo.repository.HubRepository;
 import com.example.demo.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -18,9 +20,20 @@ import java.util.stream.StreamSupport;
 public class UserService {
     private final UserRepository repository;
     private final PasswordEncoder passwordEncoder;
+    private final HubService hubService;
 
     public User save(User user) {
-        user.setPasswordHash(passwordEncoder.encode(user.getPasswordHash())); // encrypt password
+        user.setPasswordHash(passwordEncoder.encode(user.getPasswordHash()));
+
+        Hub hub = hubService.findById(1L).orElseGet(() -> {
+            Hub defaultHub = new Hub();
+            defaultHub.setName("general");
+            defaultHub.setPublic(true);
+            defaultHub.setDescription("Auto-created default hub");
+            return hubService.save(defaultHub);
+        });
+
+        hubService.addMember(hub, user);
         return repository.save(user);
     }
 
