@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @NoArgsConstructor
@@ -51,7 +52,7 @@ public class User {
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "hub_id")
     )
-    private List<Hub> adminHubs;
+    private List<Hub> adminHubs = new ArrayList<>();
 
     @ManyToMany
     @JoinTable(
@@ -59,7 +60,7 @@ public class User {
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "hub_id")
     )
-    private List<Hub> memberHubs;
+    private List<Hub> memberHubs=new ArrayList<>();
 
 
     @Enumerated(EnumType.STRING)
