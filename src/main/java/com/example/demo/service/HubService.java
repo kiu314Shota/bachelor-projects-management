@@ -81,6 +81,18 @@ public class HubService {
                 .toList();
     }
 
+    public boolean isAdminOfHub(User user, Hub hub) {
+        return hub.getAdmins().contains(user);
+    }
+    public boolean isAdminOfHubById(Long userId, Hub hub) {
+        return hub.getAdmins().stream().anyMatch(admin -> admin.getId().equals(userId));
+    }
+    public boolean isMemberOfHub(User user, Hub hub) {
+        return hub.getMembers().contains(user);
+    }
+    public boolean isActiveHub(Hub hub) {
+        return !hub.isDeleted();
+    }
     public Iterable<Hub> findAllById(Iterable<Long> longs) {
         return repository.findAllById(longs);
     }

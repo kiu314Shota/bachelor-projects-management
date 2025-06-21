@@ -43,6 +43,7 @@ public class User {
 
     private boolean isDeleted = false;
 
+    private String profilePictureUrl;
 
     @ManyToMany
     @JoinTable(

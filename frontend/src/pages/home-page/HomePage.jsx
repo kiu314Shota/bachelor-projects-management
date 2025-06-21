@@ -66,7 +66,7 @@ export default function HomePage() {
             const payload = {
                 text: newPostText,
                 hubId,
-                authorId: anonymous ? null : currentUserId,
+                authorId: anonymous ? 1 : currentUserId,
             };
 
             const res = await api.post("/posts/create", payload);
@@ -78,14 +78,14 @@ export default function HomePage() {
         }
     };
 
-    const handleCommentSubmit = async (postId, content) => {
+    const handleCommentSubmit = async (postId, content, isAnonymous = false) => {
         if (!content.trim()) return;
         try {
             const res = await api.post("/comments", {
                 content,
                 postId,
                 hubId,
-                authorId: currentUserId
+                authorId: isAnonymous ? 1 : currentUserId
             });
             setComments(prev => [...prev, res.data]);
         } catch (err) {

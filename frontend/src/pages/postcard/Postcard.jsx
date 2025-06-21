@@ -1,14 +1,13 @@
 import { useState } from "react";
-import api from "../axios";
 import "./Postcard.css";
 
-export default function PostCard({ post, getUser, getHub, getComments, currentUserId }) {
+export default function PostCard({ post, getUser, getHub, getComments, currentUserId, onCommentSubmit }) {
     const author = getUser(post.authorId);
     const hub = getHub(post.hubId);
-    const allComments = getComments(post.commentIds);
+    const allComments = getComments(post.id); // ✅ fixed: use post.id instead of post.commentIds
 
     const [upVotes, setUpVotes] = useState(post.upVotes);
-    const [vote, setVote] = useState(null); // 'like', 'dislike', or null
+    const [vote, setVote] = useState(null);
     const [downVotes, setDownVotes] = useState(post.downVotes);
     const [visibleCount, setVisibleCount] = useState(3);
     const [newComment, setNewComment] = useState("");
@@ -39,16 +38,15 @@ export default function PostCard({ post, getUser, getHub, getComments, currentUs
     const handleAddComment = async () => {
         if (!newComment.trim()) return;
 
-        const newCommentObj = {
-            content: newComment,
-            postId: post.id,
-            authorId: currentUserId,
-            hubId: post.hubId,
-        };
-
         try {
-            const res = await api.post("/comments", newCommentObj);
-            setComments([...comments, res.data]);
+            await onCommentSubmit(post.id, newComment, false); // default is not anonymous
+            setComments([...comments, {
+                id: Date.now(), // mock id to avoid React key warnings
+                content: newComment,
+                authorId: currentUserId,
+                createdAt: new Date().toISOString(),
+                postId: post.id
+            }]);
             setNewComment("");
         } catch (err) {
             console.error("Failed to submit comment", err);
@@ -115,20 +113,12 @@ export default function PostCard({ post, getUser, getHub, getComments, currentUs
             <p className="post-content">{post.text}</p>
 
             <div className="post-actions">
-                <button
-                    onClick={handleLike}
-                    style={{ backgroundColor: vote === "like" ? "#bfdbfe" : "" }}
-                >
+                <button onClick={handleLike} style={{ backgroundColor: vote === "like" ? "#bfdbfe" : "" }}>
                     👍 {upVotes}
                 </button>
-
-                <button
-                    onClick={handleDislike}
-                    style={{ backgroundColor: vote === "dislike" ? "#bfdbfe" : "" }}
-                >
+                <button onClick={handleDislike} style={{ backgroundColor: vote === "dislike" ? "#bfdbfe" : "" }}>
                     👎 {downVotes}
                 </button>
-
                 <button>💬 {comments.length} Comments</button>
             </div>
 
@@ -141,10 +131,7 @@ export default function PostCard({ post, getUser, getHub, getComments, currentUs
                         </p>
                     ))}
                     {comments.length > 3 && visibleCount < comments.length && (
-                        <button
-                            className="show-more-comments"
-                            onClick={() => setVisibleCount(comments.length)}
-                        >
+                        <button className="show-more-comments" onClick={() => setVisibleCount(comments.length)}>
                             Show all comments
                         </button>
                     )}

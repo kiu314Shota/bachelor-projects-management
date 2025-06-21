@@ -10,8 +10,10 @@ export default function CreateUserPage() {
         yearOfStudy: "FRESHMAN",
         email: "",
         passwordHash: "",
+        profileImage: "", // ✅ profile image URL
     });
 
+    const [imageFile, setImageFile] = useState(null); // ✅ file object
     const navigate = useNavigate();
 
     const handleChange = (e) => {
@@ -21,15 +23,20 @@ export default function CreateUserPage() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
+            let imageUrl = "";
+            if (imageFile) {
+                imageUrl = await uploadImageToFirebase(imageFile);
+            }
+
             const response = await fetch("http://localhost:8080/users", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(form),
+                body: JSON.stringify({ ...form, profileImage: imageUrl }),
             });
 
             if (response.ok) {
                 alert("User created successfully!");
-                navigate("/login"); // ← გადავდივართ ლოგინზე
+                navigate("/login");
             } else {
                 const err = await response.text();
                 alert("Error: " + err);
@@ -58,6 +65,11 @@ export default function CreateUserPage() {
                 </select>
                 <input name="email" type="email" placeholder="Email" value={form.email} onChange={handleChange} required />
                 <input name="passwordHash" type="password" placeholder="Password" value={form.passwordHash} onChange={handleChange} required />
+
+                {/* ✅ Image upload input */}
+                <label>Profile Picture (optional):</label>
+
+
                 <button type="submit">Register</button>
             </form>
         </div>
