@@ -11,13 +11,17 @@ export default function HomePage() {
     const [posts, setPosts] = useState([]);
     const [users, setUsers] = useState([]);
     const [comments, setComments] = useState([]);
-    const [hub, setHub] = useState(null);
+    const [hubs, setHubs] = useState([]);
     const [currentUserId, setCurrentUserId] = useState(null);
     const [newPostText, setNewPostText] = useState("");
     const [anonymous, setAnonymous] = useState(false);
     const hubId = 1;
 
     const postBoxRef = useRef(null);
+    useEffect(() => {
+        console.log("Loaded user ID:", currentUserId);
+        console.log("Loaded hubs:", hubs);
+    }, [currentUserId, hubs]);
 
     useEffect(() => {
         window._scrollToPostBox = () => {
@@ -33,15 +37,17 @@ export default function HomePage() {
                     const decoded = jwtDecode(token);
                     if (decoded.userId) setCurrentUserId(decoded.userId);
                 }
+                const hubsRes = await api.get(`/hubs`);
+                setHubs(hubsRes.data || []);
 
                 const [hubRes, postsRes, usersRes, commentsRes] = await Promise.all([
-                    api.get(`/hubs/${hubId}`),
+                    api.get(`/hubs`),
                     api.get(`/posts/hub/${hubId}`),
                     api.get(`/users`),
                     api.get(`/comments`)
                 ]);
 
-                setHub(hubRes.data);
+                setHubs(hubRes.data || []);
                 setPosts(postsRes.data);
                 setUsers(usersRes.data);
                 setComments(commentsRes.data);
@@ -88,16 +94,16 @@ export default function HomePage() {
     };
 
     const getUser = (id) => users.find((u) => u.id === id);
-    const getHub = (id) => hub && hub.id === id ? hub : null;
+    const getHub = (id) => hubs.find((h) => h.id === id);
     const getComments = (postId) => comments.filter((c) => c.postId === postId);
 
-    if (!hub || !currentUserId) return <p>იტვირთება...</p>;
+    if (!Array.isArray(hubs) || !hubs.length || !currentUserId) return <p>იტვირთება...</p>;
 
     return (
         <div className="home-container">
             <Navbar />
             <div className="main-content">
-                <Sidebar currentUserId={currentUserId} hubs={[hub]} users={users} />
+                <Sidebar currentUserId={currentUserId} hubs={hubs} users={users} />
                 <section className="feed">
                     <div className="post-box" ref={postBoxRef}>
                         <textarea
@@ -141,7 +147,7 @@ export default function HomePage() {
                         />
                     ))}
                 </section>
-                <SpecialPanel users={users} hubActivity={[]} hubs={[hub]} />
+                <SpecialPanel users={users} hubActivity={[]} hubs={hubs} />
             </div>
         </div>
     );

@@ -50,27 +50,46 @@
 }
 
 .hubs-section h4 {
-    color: #2563eb;
-    font-weight: 600;
-    font-size: 1rem;
+    margin-top: 1.5rem;
     margin-bottom: 0.5rem;
+    color: #2563eb;
+    font-size: 1rem;
 }
 
+/* Light blue default background for hub buttons */
 .hub-button-sidebar {
-    width: 100%;
-    background-color: #e8f0fe;              /* subtle blue background */
-    color: #1f2937;
+    background-color: #e0f2fe;
+    color: #1e3a8a;
     border: none;
-    padding: 0.7rem 1rem;                   /* slightly taller */
-    margin-bottom: 0.4rem;
     border-radius: 8px;
+    padding: 0.6rem 1rem;
+    margin-bottom: 0.4rem;
+    width: 100%;              /* full width of sidebar */
+    min-height: 40px;         /* consistent height */
     text-align: left;
     font-size: 0.95rem;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
+    transition: background-color 0.25s ease, color 0.25s ease;
+    white-space: nowrap;      /* prevents multi-line text */
+    overflow: hidden;
 }
 
-.hub-button-sidebar:hover {
-    background-color: #2563eb;
+
+/* Green on hover for public */
+/* PUBLIC HUB hover: use navbar blue */
+.public-hover:hover {
+    background-color: #2563eb; /* your blue */
     color: white;
 }
+
+/* PRIVATE HUB hover: darker red */
+.private-hover:hover {
+    background-color: #f87171; /* red-400 */
+    color: white;
+}
+
+
+
+/*.hub-button-sidebar:hover {*/
+/*    background-color: #2563eb;*/
+/*    color: white;*/
+/*}*/
