@@ -90,6 +90,17 @@
     color: white;
 }
 
+.hub-link-wrapper {
+    text-decoration: none;
+    display: block;
+}
+.active-hub-button {
+    background-color: #2563eb !important;
+    color: white;
+    font-weight: 600;
+    cursor: default;
+    pointer-events: none;
+}
 
 
 
