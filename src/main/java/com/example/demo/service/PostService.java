@@ -62,6 +62,13 @@ public class PostService {
                 .filter(p -> p.getHub().equals(hub))
                 .toList();
     }
+
+    public boolean isLikedByUser(Post post, User user) {
+        return post.getUpVotedUsers().contains(user);
+    }
+    public boolean isDislikedByUser(Post post, User user) {
+        return post.getDownVotedUsers().contains(user);
+    }
     public List<Post> findByAuthor(User author) {
         return repository.findByAuthor(author);
     }

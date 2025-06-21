@@ -16,6 +16,6 @@ public class PostResponseForUserDto {
     private Long hubId;
     private List<Long> commentIds;
 
-    private boolean likedByMe;
-    private boolean dislikedByMe;
+    private List<Long> upVotedUserIds;
+    private List<Long> downVotedUserIds;
 }

@@ -2,6 +2,7 @@ package com.example.demo.controller;
 
 import com.example.demo.domain.Hub;
 import com.example.demo.domain.Post;
+import com.example.demo.domain.ReactionType;
 import com.example.demo.domain.User;
 import com.example.demo.dto.PostRequestDto;
 import com.example.demo.dto.PostResponseDto;
@@ -13,10 +14,13 @@ import com.example.demo.service.UserService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.StreamSupport;
 
 @RestController
@@ -45,9 +49,9 @@ public class PostController {
     }
 
     @GetMapping
-    public List<PostResponseDto> getAll() {
+    public List<PostResponseForUserDto> getAll() {
         return StreamSupport.stream(postService.findAll().spliterator(), false)
-                .map(this::toDto)
+                .map(this::toUserDto) // ამჯერად მხოლოდ post გადაეცემა
                 .toList();
     }
 
@@ -77,12 +81,7 @@ public class PostController {
         boolean liked = postService.likePost(postOpt.get(), userOpt.get());
         return ResponseEntity.ok(liked ? "Liked" : "Unliked");
     }
-    @GetMapping("/with-user")
-    public List<PostResponseForUserDto> getAllForUser(@RequestParam Long userId) {
-        return StreamSupport.stream(postService.findAll().spliterator(), false)
-                .map(post -> toUserDto(post, userId))
-                .toList();
-    }
+
 
     @PostMapping("/{postId}/dislike")
     public ResponseEntity<String> dislikePost(@PathVariable Long postId, @RequestParam Long userId) {
@@ -118,6 +117,28 @@ public class PostController {
         return postService.findRecentPosts(limit).stream().map(p -> toDto(p)).toList();
     }
 
+    @GetMapping("/{postId}/reaction")
+    public ResponseEntity<ReactionType> getUserReactionToPost(
+            @PathVariable Long postId,
+            @RequestParam Long userId) {
+
+        Post post = postService.findById(postId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Post not found"));
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+
+        if (postService.isLikedByUser(post, user)) {
+            return ResponseEntity.ok(ReactionType.LIKE);
+        } else if (postService.isDislikedByUser(post, user)) {
+            return ResponseEntity.ok(ReactionType.DISLIKE);
+        } else {
+            return ResponseEntity.ok(null); // no reaction
+        }
+    }
+
+
+
     private PostResponseDto toDto(Post post) {
         PostResponseDto dto = modelMapper.map(post, PostResponseDto.class);
         if (post.getComments() != null)
@@ -133,7 +154,7 @@ public class PostController {
         return post;
     }
 
-    private PostResponseForUserDto toUserDto(Post post, Long currentUserId) {
+    private PostResponseForUserDto toUserDto(Post post) {
         PostResponseForUserDto dto = new PostResponseForUserDto();
 
         dto.setId(post.getId());
@@ -147,17 +168,19 @@ public class PostController {
         if (post.getComments() != null)
             dto.setCommentIds(post.getComments().stream().map(c -> c.getId()).toList());
 
-        dto.setLikedByMe(
-                post.getUpVotedUsers() != null &&
-                        post.getUpVotedUsers().stream().anyMatch(u -> u.getId().equals(currentUserId))
+        dto.setUpVotedUserIds(
+                post.getUpVotedUsers() != null
+                        ? post.getUpVotedUsers().stream().map(User::getId).toList()
+                        : List.of()
         );
-
-        dto.setDislikedByMe(
-                post.getDownVotedUsers() != null &&
-                        post.getDownVotedUsers().stream().anyMatch(u -> u.getId().equals(currentUserId))
+        dto.setDownVotedUserIds(
+                post.getDownVotedUsers() != null
+                        ? post.getDownVotedUsers().stream().map(User::getId).toList()
+                        : List.of()
         );
 
         return dto;
     }
+
 
 }

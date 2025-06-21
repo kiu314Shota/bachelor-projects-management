@@ -24,6 +24,12 @@ export default function HomePage() {
         };
     }, []);
 
+    const updatePostInList = (updatedPost) => {
+        setPosts(prev =>
+            prev.map(p => p.id === updatedPost.id ? updatedPost : p)
+        );
+    };
+
     useEffect(() => {
         const fetchInitialData = async () => {
             try {
@@ -158,6 +164,7 @@ export default function HomePage() {
                     {posts.map((post) => (
                         <PostCard
                             key={post.id}
+                            onPostUpdate={updatePostInList}
                             post={post}
                             getUser={getUser}
                             getHub={() => getHub(post.hubId)}
