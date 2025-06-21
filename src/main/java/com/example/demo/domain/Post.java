@@ -5,7 +5,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 
 @NoArgsConstructor
@@ -32,6 +34,23 @@ public class Post {
     @ManyToOne
     @JoinColumn(name = "hub_id")
     private Hub hub;
+
+    @ManyToMany
+    @JoinTable(
+            name = "post_up_voted_users",
+            joinColumns = @JoinColumn(name = "post_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id")
+    )
+    private Set<User> upVotedUsers = new HashSet<>();
+
+    @ManyToMany
+    @JoinTable(
+            name = "post_down_voted_users",
+            joinColumns = @JoinColumn(name = "post_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id")
+    )
+    private Set<User> downVotedUsers = new HashSet<>();
+
 
 
 }

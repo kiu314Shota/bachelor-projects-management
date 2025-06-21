@@ -6,8 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 @NoArgsConstructor
 @Entity
@@ -67,7 +66,26 @@ public class User {
     private Role role;
 
 
+    @ManyToMany(mappedBy = "upVotedUsers")
+    private Set<Post> likedPosts = new HashSet<>();
+
+    @ManyToMany(mappedBy = "downVotedUsers")
+    private Set<Post> dislikedPosts = new HashSet<>();
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        User user = (User) o;
+        return id != null && id.equals(user.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
+
 }
 
-//yearsofstudy ze
-//pasword hash
+

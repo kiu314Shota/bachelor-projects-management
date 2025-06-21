@@ -4,6 +4,7 @@ import com.example.demo.domain.Hub;
 import com.example.demo.domain.Post;
 import com.example.demo.domain.User;
 import com.example.demo.repository.PostRepository;
+import com.example.demo.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -16,8 +17,7 @@ import java.util.stream.StreamSupport;
 @RequiredArgsConstructor
 public class PostService {
     private final PostRepository repository;
-
-
+    private final UserRepository userRepository;
     public Post save(Post entity) {
         if (entity.getCreatedAt() == null) {
             entity.setCreatedAt(LocalDateTime.now());
@@ -104,21 +104,58 @@ public class PostService {
         });
         return optionalPost;
     }
+
     @Transactional
-    public void addUpvote(Long postId) {
-        repository.findById(postId).ifPresent(post -> {
-            post.setUpVotes(post.getUpVotes() + 1);
+    public boolean likePost(Post post, User user) {
+        if (user.getLikedPosts().contains(post)) {
+            user.getLikedPosts().remove(post);
+            post.getUpVotedUsers().remove(user);
+            post.setUpVotes(post.getUpVotes() - 1);
             repository.save(post);
-        });
+            userRepository.save(user);
+            return false;
+        } else {
+            user.getLikedPosts().add(post);
+            post.getUpVotedUsers().add(user);
+            post.setUpVotes(post.getUpVotes() + 1);
+
+            if (user.getDislikedPosts().remove(post)) {
+                post.getDownVotedUsers().remove(user);
+                post.setDownVotes(post.getDownVotes() - 1);
+            }
+
+            repository.save(post);
+            userRepository.save(user);
+            return true;
+        }
     }
 
     @Transactional
-    public void addDownVote(Long postId) {
-        repository.findById(postId).ifPresent(post -> {
-            post.setDownVotes(post.getDownVotes() + 1);
+    public boolean dislikePost(Post post, User user) {
+        if (user.getDislikedPosts().contains(post)) {
+            user.getDislikedPosts().remove(post);
+            post.getDownVotedUsers().remove(user);
+            post.setDownVotes(post.getDownVotes() - 1);
             repository.save(post);
-        });
+            userRepository.save(user);
+            return false;
+        } else {
+            user.getDislikedPosts().add(post);
+            post.getDownVotedUsers().add(user);
+            post.setDownVotes(post.getDownVotes() + 1);
+
+            if (user.getLikedPosts().remove(post)) {
+                post.getUpVotedUsers().remove(user);
+                post.setUpVotes(post.getUpVotes() - 1);
+            }
+
+            repository.save(post);
+            userRepository.save(user);
+            return true;
+        }
     }
+
+
 
     public List<Post> findRecentPosts(int limit) {
         return StreamSupport.stream(repository.findAll().spliterator(), false)

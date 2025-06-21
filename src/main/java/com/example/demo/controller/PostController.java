@@ -5,9 +5,11 @@ import com.example.demo.domain.Post;
 import com.example.demo.domain.User;
 import com.example.demo.dto.PostRequestDto;
 import com.example.demo.dto.PostResponseDto;
+import com.example.demo.dto.PostResponseForUserDto;
 import com.example.demo.repository.HubRepository;
 import com.example.demo.repository.UserRepository;
 import com.example.demo.service.PostService;
+import com.example.demo.service.UserService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -15,7 +17,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.StreamSupport;
 
 @RestController
@@ -28,6 +29,7 @@ public class PostController {
     private final UserRepository userRepository;
     private final HubRepository hubRepository;
     private final ModelMapper modelMapper;
+    private final UserService userService;
 
     @PostMapping("/create")
     public ResponseEntity<PostResponseDto> create(@RequestBody PostRequestDto dto) {
@@ -63,20 +65,37 @@ public class PostController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @PutMapping("/{id}/upvote")
-    public ResponseEntity<Void> upvote(@PathVariable Long id) {
-        if (!postService.existsById(id)) return ResponseEntity.notFound().build();
-        postService.addUpvote(id);
-        return ResponseEntity.ok().build();
+    @PostMapping("/{postId}/like")
+    public ResponseEntity<String> likePost(@PathVariable Long postId, @RequestParam Long userId) {
+        var postOpt = postService.findById(postId);
+        var userOpt = userService.findById(userId);
+
+        if (postOpt.isEmpty() || userOpt.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        boolean liked = postService.likePost(postOpt.get(), userOpt.get());
+        return ResponseEntity.ok(liked ? "Liked" : "Unliked");
+    }
+    @GetMapping("/with-user")
+    public List<PostResponseForUserDto> getAllForUser(@RequestParam Long userId) {
+        return StreamSupport.stream(postService.findAll().spliterator(), false)
+                .map(post -> toUserDto(post, userId))
+                .toList();
     }
 
-    @PutMapping("/{id}/downvote")
-    public ResponseEntity<Void> downvote(@PathVariable Long id) {
-        if (!postService.existsById(id)) return ResponseEntity.notFound().build();
-        postService.addDownVote(id);
-        return ResponseEntity.ok().build();
-    }
+    @PostMapping("/{postId}/dislike")
+    public ResponseEntity<String> dislikePost(@PathVariable Long postId, @RequestParam Long userId) {
+        var postOpt = postService.findById(postId);
+        var userOpt = userService.findById(userId);
 
+        if (postOpt.isEmpty() || userOpt.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        boolean disliked = postService.dislikePost(postOpt.get(), userOpt.get());
+        return ResponseEntity.ok(disliked ? "Disliked" : "Undisliked");
+    }
     @GetMapping("/author/{authorId}")
     public List<PostResponseDto> getByAuthor(@PathVariable Long authorId) {
         User user = userRepository.findById(authorId).orElseThrow();
@@ -99,7 +118,6 @@ public class PostController {
         return postService.findRecentPosts(limit).stream().map(p -> toDto(p)).toList();
     }
 
-
     private PostResponseDto toDto(Post post) {
         PostResponseDto dto = modelMapper.map(post, PostResponseDto.class);
         if (post.getComments() != null)
@@ -114,4 +132,32 @@ public class PostController {
         post.setHub(hubRepository.findById(dto.getHubId()).orElseThrow());
         return post;
     }
+
+    private PostResponseForUserDto toUserDto(Post post, Long currentUserId) {
+        PostResponseForUserDto dto = new PostResponseForUserDto();
+
+        dto.setId(post.getId());
+        dto.setText(post.getText());
+        dto.setCreatedAt(post.getCreatedAt());
+        dto.setUpVotes(post.getUpVotes());
+        dto.setDownVotes(post.getDownVotes());
+        dto.setAuthorId(post.getAuthor().getId());
+        dto.setHubId(post.getHub().getId());
+
+        if (post.getComments() != null)
+            dto.setCommentIds(post.getComments().stream().map(c -> c.getId()).toList());
+
+        dto.setLikedByMe(
+                post.getUpVotedUsers() != null &&
+                        post.getUpVotedUsers().stream().anyMatch(u -> u.getId().equals(currentUserId))
+        );
+
+        dto.setDislikedByMe(
+                post.getDownVotedUsers() != null &&
+                        post.getDownVotedUsers().stream().anyMatch(u -> u.getId().equals(currentUserId))
+        );
+
+        return dto;
+    }
+
 }
