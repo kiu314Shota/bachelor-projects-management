@@ -98,7 +98,7 @@ export default function PostCard({ post, getUser, getHub, getComments, currentUs
     return (
         <div className="post">
             <div className="post-header">
-                <img src={author?.profileImage || "/mock-avatars/Gigiaudi.png"} alt="User" />
+                <img src={author?.profilePictureUrl || "/mock-avatars/Gigiaudi.png"} alt="User" />
                 <div className="post-meta">
                     <h4>{author ? `${author.firstName} ${author.lastName}` : "Anonymous"}</h4>
                     <p className="post-timestamp">

@@ -13,7 +13,8 @@ public class UserRequestDto {
     private YearOfStudy yearOfStudy;
     private String email;
     private String passwordHash;
-    private String profileImage;
+    private String profilePictureUrl;
+
 
 }
 

@@ -112,7 +112,7 @@ export default function Sidebar({ currentUserId, hubs, users, setHubs, setIsCrea
     return (
         <aside className="sidebar sidebar-card">
             <div className="profile-card">
-                <img src={user?.profileImage || "/avatar-placeholder.png"} alt="Profile" />
+                <img src={user?.profilePictureUrl || "/avatar-placeholder.png"} alt="Profile" />
                 <h3>Welcome, {user.firstName}!</h3>
             </div>
 

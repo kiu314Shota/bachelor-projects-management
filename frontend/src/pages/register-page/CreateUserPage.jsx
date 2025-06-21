@@ -1,6 +1,7 @@
 import { useState } from "react";
 import "./CreateUserPage.css";
 import { useNavigate } from "react-router-dom";
+import { uploadImageToImgbb } from "../../utils/uploadImageToImgbb"; // ✅ Imgbb function
 
 export default function CreateUserPage() {
     const [form, setForm] = useState({
@@ -10,10 +11,10 @@ export default function CreateUserPage() {
         yearOfStudy: "FRESHMAN",
         email: "",
         passwordHash: "",
-        profileImage: "", // ✅ profile image URL
+        profileImage: "",
     });
 
-    const [imageFile, setImageFile] = useState(null); // ✅ file object
+    const [imageFile, setImageFile] = useState(null);
     const navigate = useNavigate();
 
     const handleChange = (e) => {
@@ -25,13 +26,13 @@ export default function CreateUserPage() {
         try {
             let imageUrl = "";
             if (imageFile) {
-                imageUrl = await uploadImageToFirebase(imageFile);
+                imageUrl = await uploadImageToImgbb(imageFile); // ✅ Imgbb upload
             }
 
             const response = await fetch("http://localhost:8080/users", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ ...form, profileImage: imageUrl }),
+                body: JSON.stringify({ ...form, profilePictureUrl: imageUrl }),
             });
 
             if (response.ok) {
@@ -66,9 +67,12 @@ export default function CreateUserPage() {
                 <input name="email" type="email" placeholder="Email" value={form.email} onChange={handleChange} required />
                 <input name="passwordHash" type="password" placeholder="Password" value={form.passwordHash} onChange={handleChange} required />
 
-                {/* ✅ Image upload input */}
                 <label>Profile Picture (optional):</label>
-
+                <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => setImageFile(e.target.files[0])}
+                />
 
                 <button type="submit">Register</button>
             </form>

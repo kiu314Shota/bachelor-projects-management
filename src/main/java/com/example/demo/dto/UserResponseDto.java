@@ -17,6 +17,6 @@ public class UserResponseDto {
     private String email;
     private List<Long> adminHubIds;
     private List<Long> memberHubIds;
-    private String profileImage;
+    private String profilePictureUrl;
 
 }
