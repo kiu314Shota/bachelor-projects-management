@@ -18,6 +18,32 @@
     margin-bottom: 1rem;
 }
 
+.birthday-button {
+    height: 36px;
+    line-height: 36px;
+    padding: 0 0.75rem;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    background-color: #f3f4f6;
+    color: #1f2937;
+    transition: all 0.2s;
+    user-select: none;
+    cursor: pointer;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    margin-bottom: 0.6rem;
+    border: none;
+    width: 100%;
+    text-align: left;
+}
+
+.birthday-button:hover {
+    background-color: #dbeafe;
+    color: #1d4ed8;
+    font-weight: 500;
+}
+
 .birthday-list {
     list-style: none;
     padding: 0;
@@ -46,4 +72,31 @@
 .special-button:hover {
     background-color: #2563eb;
     color: white;
+}
+.active-hub-label {
+    height: 36px;
+    line-height: 36px;
+    padding: 0 0.75rem;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    background-color: #f3f4f6;
+    color: #1f2937;
+    transition: all 0.2s;
+    user-select: none;
+    pointer-events: auto;
+    cursor: default;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+
+    margin-bottom: 0.6rem; /* ✅ Add spacing between labels */
+}
+.active-hubs-list > .active-hub-label:not(:last-child) {
+    margin-bottom: 0.6rem;
+}
+
+.active-hub-label.hovered {
+    background-color: #2563eb;
+    color: white;
+    font-weight: 500;
 }

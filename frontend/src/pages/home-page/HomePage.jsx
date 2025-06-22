@@ -17,6 +17,7 @@ export default function HomePage() {
     const [anonymous, setAnonymous] = useState(false);
     const [isCreateHubModalOpen, setIsCreateHubModalOpen] = useState(false);
     const postBoxRef = useRef(null);
+    const [topActiveHubs, setTopActiveHubs] = useState([]);
 
     useEffect(() => {
         window._scrollToPostBox = () => {
@@ -40,10 +41,11 @@ export default function HomePage() {
                 const userId = decoded.userId;
                 setCurrentUserId(userId);
 
-                const [hubsRes, usersRes, commentsRes] = await Promise.all([
+                const [hubsRes, usersRes, commentsRes, topHubsRes] = await Promise.all([
                     api.get(`/hubs`),
                     api.get(`/users`),
-                    api.get(`/comments`)
+                    api.get(`/comments`),
+                    api.get(`/hubs/top-active?hours=3&limit=3`)
                 ]);
 
                 const allHubs = hubsRes.data || [];
@@ -53,6 +55,7 @@ export default function HomePage() {
                 setHubs(allHubs);
                 setUsers(allUsers);
                 setComments(allComments);
+                setTopActiveHubs(topHubsRes.data || []);
 
                 const joinedHubIds = allHubs
                     .filter(h => h.memberIds?.includes(userId) || h.adminIds?.includes(userId))
@@ -175,7 +178,7 @@ export default function HomePage() {
                         />
                     ))}
                 </section>
-                <SpecialPanel users={users} hubActivity={[]} hubs={hubs} />
+                <SpecialPanel users={users} hubActivity={topActiveHubs} hubs={hubs} />
             </div>
         </div>
     );
