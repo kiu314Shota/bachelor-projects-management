@@ -124,6 +124,35 @@ export default function HubRightPanel({
 
     return (
         <div className="hub-right-panel">
+            {isAdmin && (
+                <div className="privacy-toggle-section">
+                    <button
+                        className="toggle-privacy-button"
+                        onClick={async () => {
+                            try {
+                                await api.patch(`/hubs/${currentHubId}/toggle-privacy`, null, {
+                                    params: { adminId: currentUserId }
+                                });
+
+                                const updated = await api.get(`/hubs/${currentHubId}`);
+                                setHubs(prev =>
+                                    prev.map(h =>
+                                        h.id === updated.data.id ? updated.data : h
+                                    )
+                                );
+
+                                alert("Privacy updated!");
+                            } catch (err) {
+                                console.error("Privacy toggle failed", err);
+                                alert("Failed to change privacy.");
+                            }
+                        }}
+                    >
+                        🔒🔓 Toggle Privacy
+                    </button>
+                </div>
+            )}
+
             <h3>Admins</h3>
             {adminUsers?.length ? (
                 adminUsers.map((user) => (
@@ -190,34 +219,6 @@ export default function HubRightPanel({
                 </div>
             )}
 
-            {isAdmin && (
-                <div className="privacy-toggle-section">
-                    <button
-                        className="toggle-privacy-button"
-                        onClick={async () => {
-                            try {
-                                await api.patch(`/hubs/${currentHubId}/toggle-privacy`, null, {
-                                    params: { adminId: currentUserId }
-                                });
-
-                                const updated = await api.get(`/hubs/${currentHubId}`);
-                                setHubs(prev =>
-                                    prev.map(h =>
-                                        h.id === updated.data.id ? updated.data : h
-                                    )
-                                );
-
-                                alert("Privacy updated!");
-                            } catch (err) {
-                                console.error("Privacy toggle failed", err);
-                                alert("Failed to change privacy.");
-                            }
-                        }}
-                    >
-                        🔒🔓 Toggle Privacy
-                    </button>
-                </div>
-            )}
 
         </div>
 
