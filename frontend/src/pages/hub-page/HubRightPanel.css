@@ -29,3 +29,39 @@
     color: #1f2937;
     border-bottom: 1px solid #f3f4f6;
 }
+
+.join-request {
+    margin-bottom: 1rem;
+    padding: 0.5rem;
+    background-color: #f9fafb;
+    border-radius: 10px;
+    border: 1px solid #e5e7eb;
+}
+
+.join-request-info {
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: #374151;
+}
+
+.request-message {
+    font-style: italic;
+    font-size: 0.9rem;
+    color: #6b7280;
+}
+
+.request-actions button {
+    margin-right: 0.5rem;
+    padding: 0.4rem 0.8rem;
+    font-size: 0.85rem;
+    cursor: pointer;
+    border: none;
+    border-radius: 6px;
+    background-color: #e0f2fe;
+    color: #1d4ed8;
+}
+
+.request-actions button:hover {
+    background-color: #bfdbfe;
+}
+
