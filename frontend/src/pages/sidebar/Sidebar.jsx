@@ -71,6 +71,10 @@ export default function Sidebar({ currentUserId, hubs, users, setHubs, setIsCrea
     const [description, setDescription] = useState("");
     const [isPublic, setIsPublic] = useState(true);
 
+    const [showJoinRequestModal, setShowJoinRequestModal] = useState(false);
+    const [requestMessage, setRequestMessage] = useState("");
+    const [targetPrivateHub, setTargetPrivateHub] = useState(null);
+
     const handleToggleUserHubs = () => {
         setVisibleUserHubs(prev =>
             prev >= userHubs.length ? 5 : Math.min(prev + 5, userHubs.length)
@@ -141,10 +145,16 @@ export default function Sidebar({ currentUserId, hubs, users, setHubs, setIsCrea
                         )}
                     </div>
                 ) : (
-                    <h2>Welcome, {user?.firstName}</h2>
+                    <>
+                        <img
+                            src={user.profilePictureUrl || "/mock-avatars/Gigiaudi.png"}
+                            alt="User"
+                        />
+                        <h2>Welcome, {user?.firstName}</h2>
+                    </>
                 )}
-
             </div>
+
 
 
             <div className="hubs-section">
@@ -184,21 +194,24 @@ export default function Sidebar({ currentUserId, hubs, users, setHubs, setIsCrea
                                 const isJoined = hub.memberIds?.includes(currentUserId) || hub.adminIds?.includes(currentUserId);
                                 if (isJoined) {
                                     navigate(`/hubs/${hub.id}`);
-                                } else {
-                                    const confirmJoin = window.confirm(`You are not a member of ${hub.name}. Do you want to join?`);
+                                } else if (hub.public) {
+                                    const confirmJoin = window.confirm(`Join public hub ${hub.name}?`);
                                     if (!confirmJoin) return;
-
                                     try {
                                         await api.post(`/hubs/${hub.id}/add-member`, null, {
                                             params: { userId: currentUserId }
                                         });
                                         setTimeout(() => navigate(`/hubs/${hub.id}`), 100);
                                     } catch (err) {
-                                        console.error("Join via sidebar failed", err);
+                                        console.error("Join failed", err);
                                         alert("Failed to join hub.");
                                     }
+                                } else {
+                                    setTargetPrivateHub(hub);
+                                    setShowJoinRequestModal(true);
                                 }
                             }}
+
                         >
                             <HubButton hub={hub} currentUserId={currentUserId} isActive={activeHub?.id === hub.id} />
                         </div>
@@ -265,9 +278,52 @@ export default function Sidebar({ currentUserId, hubs, users, setHubs, setIsCrea
                             </button>
 
                         </div>
+
                     </div>
                 </div>
             )}
+            {showJoinRequestModal && targetPrivateHub && (
+                <div className="modal-backdrop">
+                    <div className="modal">
+                        <h3>Request to Join: {targetPrivateHub.name}</h3>
+                        <textarea
+                            placeholder="Optional message to the admins"
+                            value={requestMessage}
+                            onChange={(e) => setRequestMessage(e.target.value)}
+                        />
+                        <div className="modal-actions">
+                            <button onClick={async () => {
+                                try {
+                                    await api.post("/hub-join-requests/send", null, {
+                                        params: {
+                                            senderId: currentUserId,
+                                            hubId: targetPrivateHub.id,
+                                            message: requestMessage
+                                        }
+                                    });
+                                    alert("Request sent!");
+                                    setShowJoinRequestModal(false);
+                                    setRequestMessage("");
+                                    setTargetPrivateHub(null);
+                                } catch (err) {
+                                    console.error("Request failed", err);
+                                    alert("Failed to send request.");
+                                }
+                            }}>
+                                Send Request
+                            </button>
+                            <button onClick={() => {
+                                setShowJoinRequestModal(false);
+                                setRequestMessage("");
+                                setTargetPrivateHub(null);
+                            }}>
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
         </aside>
     );
 }

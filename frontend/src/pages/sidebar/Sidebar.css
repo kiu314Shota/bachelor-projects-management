@@ -95,7 +95,7 @@
     display: block;
 }
 .active-hub-button {
-    background-color: #2563eb !important;
+    background-color: #2563eb;
     color: white;
     font-weight: 600;
     cursor: default;
