@@ -13,6 +13,8 @@ export default function CreateUserPage() {
         passwordHash: "",
         profileImage: "",
     });
+    localStorage.removeItem("token");
+
 
     const [imageFile, setImageFile] = useState(null);
     const navigate = useNavigate();
