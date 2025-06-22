@@ -3,11 +3,14 @@ package com.example.demo.service;
 import com.example.demo.domain.Hub;
 import com.example.demo.domain.HubJoinRequest;
 import com.example.demo.domain.User;
+import com.example.demo.dto.HubActivityDto;
 import com.example.demo.repository.HubRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.StreamSupport;
@@ -80,6 +83,23 @@ public class HubService {
         repository.save(hub);
     }
 
+
+
+    public List<HubActivityDto> getTopActiveHubsInLastNHours(int hours, int limit) {
+        LocalDateTime cutoff = LocalDateTime.now().minusHours(hours);
+
+        return findAllActive().stream()
+                .map(hub -> {
+                    long count = hub.getPosts().stream()
+                            .filter(post -> post.getCreatedAt() != null && post.getCreatedAt().isAfter(cutoff))
+                            .count();
+                    return new HubActivityDto(hub.getId(), hub.getName(), count);
+                })
+                .filter(dto -> dto.getNumberOfPosts() > 0)
+                .sorted(Comparator.comparingLong(HubActivityDto::getNumberOfPosts).reversed())
+                .limit(limit)
+                .toList();
+    }
 
     public List<Hub> findHubsByAdmin(User admin) {
         return findAllActive().stream()

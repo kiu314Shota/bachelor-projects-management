@@ -2,6 +2,7 @@ package com.example.demo.controller;
 
 import com.example.demo.domain.Hub;
 import com.example.demo.domain.User;
+import com.example.demo.dto.HubActivityDto;
 import com.example.demo.dto.HubRequestDto;
 import com.example.demo.dto.HubResponseDto;
 import com.example.demo.service.HubService;
@@ -52,6 +53,15 @@ public class HubController {
                 .map(this::toDto)
                 .collect(Collectors.toList());
     }
+    @GetMapping("/top-active")
+    public ResponseEntity<List<HubActivityDto>> getTopActiveHubs(
+            @RequestParam(defaultValue = "3") int hours,
+            @RequestParam(defaultValue = "5") int limit) {
+
+        List<HubActivityDto> topHubs = hubService.getTopActiveHubsInLastNHours(hours, limit);
+        return ResponseEntity.ok(topHubs);
+    }
+
 
     @PostMapping("/{hubId}/add-member")
     public void addMember(@PathVariable Long hubId, @RequestParam Long userId) {
