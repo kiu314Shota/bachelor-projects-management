@@ -146,3 +146,17 @@
 .leave-hub-button:hover {
     background-color: #ef4444;
 }
+
+.privacy-toggle-section {
+    margin-top: 1rem;
+    text-align: center;
+}
+
+.toggle-privacy-button {
+    background-color: #f3f4f6;
+    color: #1f2937;
+    border: 1px solid #d1d5db;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+}

@@ -5,10 +5,12 @@ import com.example.demo.domain.HubJoinRequest;
 import com.example.demo.domain.User;
 import com.example.demo.dto.HubActivityDto;
 import com.example.demo.repository.HubRepository;
+import com.example.demo.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.nio.file.AccessDeniedException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Comparator;
@@ -22,6 +24,7 @@ public class HubService {
 
     private final HubRepository repository;
     private final HubJoinRequestService joinRequestService;
+    private final UserRepository userRepository;
 
     public Hub save(Hub entity) {
         return repository.save(entity);
@@ -218,6 +221,30 @@ public class HubService {
     public void removeAdmin(Hub hub, User user) {
         hub.getAdmins().remove(user);
         repository.save(hub);
+    }
+
+    @Transactional
+    public String togglePrivacy(Long hubId, Long adminId) throws AccessDeniedException {
+        Hub hub = findActiveById(hubId).orElseThrow();
+        User user = userRepository.findById(adminId).orElseThrow();
+
+        if (!hub.getAdmins().contains(user)) {
+            throw new AccessDeniedException("Only admins can change privacy.");
+        }
+
+        boolean wasPrivate = !hub.isPublic();
+        hub.setPublic(!hub.isPublic());
+        save(hub);
+
+        if (wasPrivate && hub.isPublic()) {
+            List<HubJoinRequest> requests = joinRequestService.findByHub(hub);
+            for (HubJoinRequest req : requests) {
+                addMember(hub, req.getSender());
+                joinRequestService.deleteRequest(req.getId());
+            }
+        }
+
+        return "Hub privacy changed to " + (hub.isPublic() ? "public" : "private");
     }
 
     @Transactional

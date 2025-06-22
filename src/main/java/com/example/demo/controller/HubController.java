@@ -1,6 +1,7 @@
 package com.example.demo.controller;
 
 import com.example.demo.domain.Hub;
+import com.example.demo.domain.HubJoinRequest;
 import com.example.demo.domain.User;
 import com.example.demo.dto.HubActivityDto;
 import com.example.demo.dto.HubRequestDto;
@@ -10,10 +11,13 @@ import com.example.demo.service.UserService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.nio.file.AccessDeniedException;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @RestController
 @RequestMapping("/hubs")
@@ -131,6 +135,21 @@ public class HubController {
 
         return ResponseEntity.ok("You have left the hub.");
     }
+
+    @PatchMapping("/{hubId}/toggle-privacy")
+    public ResponseEntity<String> togglePrivacy(@PathVariable Long hubId, @RequestParam Long adminId) {
+        try {
+            String result = hubService.togglePrivacy(hubId, adminId);
+            return ResponseEntity.ok(result);
+        } catch (AccessDeniedException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Hub or User not found.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unexpected error.");
+        }
+    }
+
 
 
 
