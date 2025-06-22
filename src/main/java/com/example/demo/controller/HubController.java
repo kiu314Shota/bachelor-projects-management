@@ -14,14 +14,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 @RestController
 @RequestMapping("/hubs")
 @RequiredArgsConstructor
 @SecurityRequirement(name = "bearerAuth")
-
 public class HubController {
 
     private final HubService hubService;
@@ -42,17 +39,18 @@ public class HubController {
 
     @GetMapping
     public List<HubResponseDto> getAllHubs() {
-        return StreamSupport.stream(hubService.findAll().spliterator(), false)
+        return hubService.findAllActive().stream()
                 .map(this::toDto)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @GetMapping("/public")
     public List<HubResponseDto> getPublicHubs() {
         return hubService.findPublicHubs().stream()
                 .map(this::toDto)
-                .collect(Collectors.toList());
+                .toList();
     }
+
     @GetMapping("/top-active")
     public ResponseEntity<List<HubActivityDto>> getTopActiveHubs(
             @RequestParam(defaultValue = "3") int hours,
@@ -61,7 +59,6 @@ public class HubController {
         List<HubActivityDto> topHubs = hubService.getTopActiveHubsInLastNHours(hours, limit);
         return ResponseEntity.ok(topHubs);
     }
-
 
     @PostMapping("/{hubId}/add-member")
     public void addMember(@PathVariable Long hubId, @RequestParam Long userId) {
@@ -115,14 +112,23 @@ public class HubController {
         boolean isAdmin = hub.getAdmins().contains(user);
         boolean isMember = hub.getMembers().contains(user);
 
-        if (!isAdmin && !isMember) return ResponseEntity.badRequest().body("User not part of the hub");
+        if (!isAdmin && !isMember) {
+            return ResponseEntity.badRequest().body("User is not part of this hub.");
+        }
 
-        if (isAdmin && hub.getAdmins().size() == 1) {
+        // ✅ ამოღება ორივე სიიდან
+        hub.getAdmins().remove(user);
+        hub.getMembers().remove(user);
+        user.getAdminHubs().remove(hub);
+        user.getMemberHubs().remove(hub);
+        hubService.save(hub);
+
+        // ✅ ჰაბი უნდა გაუქმდეს თუ აღარ დარჩა არცერთი ადმინი
+        if (hub.getAdmins().isEmpty()) {
             hubService.softDeleteById(hubId);
             return ResponseEntity.ok("Hub deleted because the last admin left.");
         }
 
-        hubService.leaveHub(hub, user);
         return ResponseEntity.ok("You have left the hub.");
     }
 

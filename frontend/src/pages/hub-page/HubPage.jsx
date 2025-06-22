@@ -170,10 +170,13 @@ export default function HubPage() {
                     adminUsers={adminUsers}
                     memberUsers={memberUsers}
                     currentHubId={hub.id}
+                    currentUserId={currentUserId}
+                    setHubs={setHubs}
                     onMemberRemoved={(removedId) =>
                         setMemberUsers((prev) => prev.filter((u) => u.id !== removedId))
                     }
                 />
+
             </div>
         </div>
     );

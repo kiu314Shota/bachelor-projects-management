@@ -125,3 +125,24 @@
 .promote-button:hover {
     background-color: #fde68a;
 }
+
+
+.leave-hub-section {
+    margin-top: 1rem;
+    text-align: center;
+}
+
+.leave-hub-button {
+    background-color: #f87171;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 12px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s;
+}
+
+.leave-hub-button:hover {
+    background-color: #ef4444;
+}

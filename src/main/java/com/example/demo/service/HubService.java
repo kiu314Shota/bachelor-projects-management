@@ -205,22 +205,18 @@ public class HubService {
     }
 
 
-
     @Transactional
     public void leaveHub(Hub hub, User user) {
-        boolean wasAdmin = hub.getAdmins().remove(user);
-        boolean wasMember = hub.getMembers().remove(user);
+        hub.getAdmins().remove(user);
+        hub.getMembers().remove(user);
+        user.getAdminHubs().remove(hub);
+        user.getMemberHubs().remove(hub); // ❗ ეს გეთაკლოება
+        repository.save(hub);
+    }
 
-        // თუ არც მემბერია და არც ადმინი, არაფერი გააკეთოს
-        if (!wasAdmin && !wasMember) {
-            throw new IllegalStateException("User is not part of the hub.");
-        }
-
-        // თუ ერთადერთი ადმინი იყო და ის წაიშალა, წაშალოს ჰაბი
-        if (wasAdmin && hub.getAdmins().isEmpty()) {
-            hub.setDeleted(true);
-        }
-
+    @Transactional
+    public void removeAdmin(Hub hub, User user) {
+        hub.getAdmins().remove(user);
         repository.save(hub);
     }
 

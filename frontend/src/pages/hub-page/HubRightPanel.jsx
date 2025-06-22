@@ -1,11 +1,18 @@
 import "./HubRightPanel.css";
 import { useEffect, useState } from "react";
-import { useAuth } from "../../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 import api from "../axios";
 
-export default function HubRightPanel({ adminUsers, memberUsers, currentHubId, onMemberRemoved }) {
-    const { currentUserId } = useAuth();
+export default function HubRightPanel({
+                                          adminUsers,
+                                          memberUsers,
+                                          currentHubId,
+                                          currentUserId,
+                                          setHubs,
+                                          onMemberRemoved
+                                      }) {
     const [requests, setRequests] = useState([]);
+    const navigate = useNavigate();
 
     const isAdmin = adminUsers?.some(user => user.id === currentUserId);
 
@@ -14,7 +21,6 @@ export default function HubRightPanel({ adminUsers, memberUsers, currentHubId, o
             !(currentHubId === 1 && user.id === 1) &&
             !adminUsers.some(admin => admin.id === user.id)
     );
-
 
     const fetchRequests = async () => {
         try {
@@ -94,6 +100,26 @@ export default function HubRightPanel({ adminUsers, memberUsers, currentHubId, o
         }
     };
 
+    const handleLeaveHub = async () => {
+        const confirmed = window.confirm("Are you sure you want to leave this hub?");
+        if (!confirmed) return;
+
+        try {
+            await api.delete(`/hubs/${currentHubId}/leave-hub`, {
+                params: { userId: currentUserId }
+            });
+
+            const hubsRes = await api.get("/hubs");
+            setHubs(hubsRes.data);
+
+            alert("You left the hub.");
+            navigate("/hubs/1");
+        } catch (err) {
+            console.error("Leave hub failed", err);
+            alert("Failed to leave hub.");
+        }
+    };
+
     if (!currentUserId) return <p>Loading...</p>;
 
     return (
@@ -154,6 +180,14 @@ export default function HubRightPanel({ adminUsers, memberUsers, currentHubId, o
                 ))
             ) : (
                 <p>No members listed.</p>
+            )}
+
+            {currentHubId !== 1 && (
+                <div className="leave-hub-section">
+                    <button className="leave-hub-button" onClick={handleLeaveHub}>
+                        🚪 Leave Hub
+                    </button>
+                </div>
             )}
         </div>
     );
