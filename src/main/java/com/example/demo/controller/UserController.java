@@ -99,6 +99,21 @@ public class UserController {
         userService.deleteByEmail(email);
     }
 
+    @SecurityRequirement(name = "bearerAuth")
+    @PutMapping("/{id}/profile-picture")
+    public boolean tryUpdateProfilePicture(
+            @PathVariable Long id,
+            @RequestParam String url
+    ) {
+        return userService.tryUpdateProfilePicture(id, url);
+    }
+
+    @SecurityRequirement(name = "bearerAuth")
+    @DeleteMapping("/{id}/profile-picture")
+    public void deleteProfilePicture(@PathVariable Long id) {
+        userService.deleteProfilePicture(id);
+    }
+
     private UserResponseDto toDto(User user) {
         UserResponseDto dto = modelMapper.map(user, UserResponseDto.class);
 

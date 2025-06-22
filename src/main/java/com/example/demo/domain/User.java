@@ -44,6 +44,7 @@ public class User {
     private boolean isDeleted = false;
 
     private String profilePictureUrl;
+    private LocalDate profilePictureLastUpdated;
 
     @ManyToMany
     @JoinTable(

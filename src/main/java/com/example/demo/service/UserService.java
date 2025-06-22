@@ -99,4 +99,37 @@ public class UserService {
         }
     }
 
+    @Transactional
+    public boolean tryUpdateProfilePicture(Long userId, String imageUrl) {
+        Optional<User> optionalUser = repository.findById(userId);
+        if (optionalUser.isEmpty()) return false;
+
+        User user = optionalUser.get();
+
+        // თუ დღეს უკვე განახლებულია
+        if (user.getProfilePictureLastUpdated() != null &&
+                user.getProfilePictureLastUpdated().isEqual(LocalDate.now())) {
+            return false;
+        }
+
+        // განახლება დაშვებულია
+        user.setProfilePictureUrl(imageUrl);
+        user.setProfilePictureLastUpdated(LocalDate.now());
+        repository.save(user);
+        return true;
+    }
+
+    @Transactional
+    public void deleteProfilePicture(Long userId) {
+        Optional<User> optionalUser = repository.findById(userId);
+        if (optionalUser.isPresent()) {
+            User user = optionalUser.get();
+            user.setProfilePictureUrl("");
+            user.setProfilePictureLastUpdated(LocalDate.now());
+            repository.save(user);
+        }
+    }
+
+
+
 }
