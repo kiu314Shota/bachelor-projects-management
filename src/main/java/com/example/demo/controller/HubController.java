@@ -90,18 +90,43 @@ public class HubController {
     }
 
     @DeleteMapping("/{hubId}/remove-member")
-    public void removeMember(@PathVariable Long hubId, @RequestParam Long userId) {
+    public ResponseEntity<String> removeMember(
+            @PathVariable Long hubId,
+            @RequestParam Long userId,
+            @RequestParam Long adminId
+    ) {
         Hub hub = hubService.findActiveById(hubId).orElseThrow();
         User user = userService.findById(userId).orElseThrow();
-        hubService.removeMember(hub, user);
+        User admin = userService.findById(adminId).orElseThrow();
+
+        try {
+            hubService.removeMember(hub, user, admin);
+            return ResponseEntity.ok("Member removed");
+        } catch (SecurityException e) {
+            return ResponseEntity.status(403).body("Only admins can remove members.");
+        }
     }
 
-    @DeleteMapping("/{hubId}/leave-admin")
-    public void leaveAsAdmin(@PathVariable Long hubId, @RequestParam Long userId) {
+    @DeleteMapping("/{hubId}/leave-hub")
+    public ResponseEntity<String> leaveHub(@PathVariable Long hubId, @RequestParam Long userId) {
         Hub hub = hubService.findActiveById(hubId).orElseThrow();
         User user = userService.findById(userId).orElseThrow();
-        hubService.leaveHubAsAdmin(hub, user);
+
+        boolean isAdmin = hub.getAdmins().contains(user);
+        boolean isMember = hub.getMembers().contains(user);
+
+        if (!isAdmin && !isMember) return ResponseEntity.badRequest().body("User not part of the hub");
+
+        if (isAdmin && hub.getAdmins().size() == 1) {
+            hubService.softDeleteById(hubId);
+            return ResponseEntity.ok("Hub deleted because the last admin left.");
+        }
+
+        hubService.leaveHub(hub, user);
+        return ResponseEntity.ok("You have left the hub.");
     }
+
+
 
     @DeleteMapping("/{hubId}")
     public void softDelete(@PathVariable Long hubId) {

@@ -3,15 +3,18 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import api from "../axios";
 
-export default function HubRightPanel({ adminUsers, memberUsers, currentHubId }) {
+export default function HubRightPanel({ adminUsers, memberUsers, currentHubId, onMemberRemoved }) {
     const { currentUserId } = useAuth();
     const [requests, setRequests] = useState([]);
 
     const isAdmin = adminUsers?.some(user => user.id === currentUserId);
 
     const filteredMembers = memberUsers?.filter(
-        user => !(currentHubId === 1 && user.id === 1)
+        user =>
+            !(currentHubId === 1 && user.id === 1) &&
+            !adminUsers.some(admin => admin.id === user.id)
     );
+
 
     const fetchRequests = async () => {
         try {
@@ -60,6 +63,37 @@ export default function HubRightPanel({ adminUsers, memberUsers, currentHubId })
         }
     };
 
+    const handleKickMember = async (memberId) => {
+        if (memberId === currentUserId) return alert("You can't remove yourself.");
+        const confirmed = window.confirm("Are you sure you want to remove this member?");
+        if (!confirmed) return;
+
+        try {
+            await api.delete(`/hubs/${currentHubId}/remove-member`, {
+                params: {
+                    userId: memberId,
+                    adminId: currentUserId
+                }
+            });
+            onMemberRemoved?.(memberId);
+        } catch (err) {
+            console.error("Remove member failed", err);
+            alert("Failed to remove member.");
+        }
+    };
+
+    const handlePromote = async (memberId, name) => {
+        try {
+            await api.post(`/hubs/${currentHubId}/add-admin`, null, {
+                params: { userId: memberId }
+            });
+            alert(`${name} was promoted to admin.`);
+        } catch (err) {
+            console.error("Promote failed", err);
+            alert("Could not promote member.");
+        }
+    };
+
     if (!currentUserId) return <p>Loading...</p>;
 
     return (
@@ -96,9 +130,27 @@ export default function HubRightPanel({ adminUsers, memberUsers, currentHubId })
             <h3>Members</h3>
             {filteredMembers?.length ? (
                 filteredMembers.map((user) => (
-                    <button key={user.id} className="hub-button-sidebar public-hover" disabled>
-                        {user.firstName} {user.lastName}
-                    </button>
+                    <div key={user.id} className="member-entry">
+                        <button className="hub-button-sidebar public-hover" disabled>
+                            {user.firstName} {user.lastName}
+                        </button>
+                        {isAdmin && (
+                            <div className="member-actions">
+                                <button
+                                    className="remove-member-button"
+                                    onClick={() => handleKickMember(user.id)}
+                                >
+                                    ❌
+                                </button>
+                                <button
+                                    className="promote-member-button"
+                                    onClick={() => handlePromote(user.id, `${user.firstName} ${user.lastName}`)}
+                                >
+                                    🔼
+                                </button>
+                            </div>
+                        )}
+                    </div>
                 ))
             ) : (
                 <p>No members listed.</p>

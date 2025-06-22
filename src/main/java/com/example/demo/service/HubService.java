@@ -204,17 +204,35 @@ public class HubService {
         repository.softDeleteById(id);
     }
 
+
+
     @Transactional
-    public void removeMember(Hub hub, User user) {
+    public void leaveHub(Hub hub, User user) {
+        boolean wasAdmin = hub.getAdmins().remove(user);
+        boolean wasMember = hub.getMembers().remove(user);
+
+        // თუ არც მემბერია და არც ადმინი, არაფერი გააკეთოს
+        if (!wasAdmin && !wasMember) {
+            throw new IllegalStateException("User is not part of the hub.");
+        }
+
+        // თუ ერთადერთი ადმინი იყო და ის წაიშალა, წაშალოს ჰაბი
+        if (wasAdmin && hub.getAdmins().isEmpty()) {
+            hub.setDeleted(true);
+        }
+
+        repository.save(hub);
+    }
+
+    @Transactional
+    public void removeMember(Hub hub, User user, User admin) {
+        if (!isAdminOfHub(admin, hub)) {
+            throw new SecurityException("Not authorized");
+        }
+
         hub.getMembers().remove(user);
         user.getMemberHubs().remove(hub);
         repository.save(hub);
     }
 
-    @Transactional
-    public void leaveHubAsAdmin(Hub hub, User user) {
-        hub.getAdmins().remove(user);
-        user.getAdminHubs().remove(hub);
-        repository.save(hub);
-    }
 }

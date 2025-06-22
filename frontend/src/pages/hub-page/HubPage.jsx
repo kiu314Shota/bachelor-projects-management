@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState, useRef } from "react";
 import Navbar from "../navbar/Navbar";
 import Sidebar from "../sidebar/Sidebar";
@@ -6,10 +6,12 @@ import HubRightPanel from "./HubRightPanel";
 import PostCard from "../postcard/Postcard";
 import api from "../axios";
 import { jwtDecode } from "jwt-decode";
-import "../home-page/HomePage.css"; // reuse HomePage styles
-import "./HubPage.css"; // specific styles for HubPage
+import "../home-page/HomePage.css";
+import "./HubPage.css";
+
 export default function HubPage() {
     const { hubId } = useParams();
+    const navigate = useNavigate();
     const [hub, setHub] = useState(null);
     const [posts, setPosts] = useState([]);
     const [users, setUsers] = useState([]);
@@ -18,10 +20,11 @@ export default function HubPage() {
     const [currentUserId, setCurrentUserId] = useState(null);
     const [newPostText, setNewPostText] = useState("");
     const [anonymous, setAnonymous] = useState(false);
+    const [memberUsers, setMemberUsers] = useState([]);
     const postBoxRef = useRef(null);
-    const adminUsers = users.filter(u => hub.adminIds?.includes(u.id));
-    const memberUsers = users.filter(u => hub.memberIds?.includes(u.id));
     const [isCreateHubModalOpen, setIsCreateHubModalOpen] = useState(false);
+
+    const adminUsers = users.filter(u => hub?.adminIds?.includes(u.id));
 
     useEffect(() => {
         const fetchAll = async () => {
@@ -45,6 +48,9 @@ export default function HubPage() {
                 setPosts(postsRes.data);
                 setUsers(usersRes.data);
                 setComments(commentsRes.data);
+
+                // ✅ ახალი წევრების სტეიტი
+                setMemberUsers(usersRes.data.filter(u => hubRes.data.memberIds?.includes(u.id)));
             } catch (err) {
                 console.error("Error loading hub data", err);
             }
@@ -53,16 +59,23 @@ export default function HubPage() {
         fetchAll();
     }, [hubId]);
 
+    useEffect(() => {
+        if (!hub || !currentUserId) return;
+        const isStillMember = hub.memberIds.includes(currentUserId) || hub.adminIds.includes(currentUserId);
+        if (!isStillMember && Number(hubId) !== 1) {
+            alert("You are no longer a member of this hub.");
+            navigate("/hubs/1");
+        }
+    }, [hub, currentUserId]);
+
     const handlePostSubmit = async () => {
         if (!newPostText.trim()) return;
-
         try {
             const payload = {
                 text: newPostText,
                 hubId: Number(hubId),
                 authorId: anonymous ? 1 : currentUserId
             };
-
             const res = await api.post("/posts/create", payload);
             setPosts(prev => [res.data, ...prev]);
             setNewPostText("");
@@ -103,10 +116,9 @@ export default function HubPage() {
                     hubs={hubs}
                     users={users}
                     setHubs={setHubs}
-                    setIsCreateHubModalOpen={setIsCreateHubModalOpen} // ✅ pass setter
+                    setIsCreateHubModalOpen={setIsCreateHubModalOpen}
                     activeHub={hub}
                 />
-
 
                 <section className="feed">
                     <div className="post-box" ref={postBoxRef}>
@@ -122,7 +134,6 @@ export default function HubPage() {
                             }}
                             rows={3}
                         />
-
                         <div className="post-options">
                             {!isCreateHubModalOpen && (
                                 <div className="anon-toggle">
@@ -137,8 +148,6 @@ export default function HubPage() {
                                     <span className="anon-label">Post anonymously</span>
                                 </div>
                             )}
-
-
                             <button onClick={handlePostSubmit}>Post</button>
                         </div>
                     </div>
@@ -156,10 +165,14 @@ export default function HubPage() {
                         />
                     ))}
                 </section>
+
                 <HubRightPanel
                     adminUsers={adminUsers}
                     memberUsers={memberUsers}
                     currentHubId={hub.id}
+                    onMemberRemoved={(removedId) =>
+                        setMemberUsers((prev) => prev.filter((u) => u.id !== removedId))
+                    }
                 />
             </div>
         </div>

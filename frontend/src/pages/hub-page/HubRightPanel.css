@@ -65,3 +65,63 @@
     background-color: #bfdbfe;
 }
 
+.member-entry {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+}
+
+.member-actions {
+    display: flex;
+    gap: 4px;
+}
+
+.remove-member-button,
+.promote-member-button {
+    font-size: 0.75rem;
+    padding: 0.2rem 0.5rem;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.remove-member-button {
+    background-color: #fee2e2;
+    color: #991b1b;
+}
+
+.remove-member-button:hover {
+    background-color: #fecaca;
+}
+
+.promote-member-button {
+    background-color: #fef9c3;
+    color: #92400e;
+}
+
+.promote-member-button:hover {
+    background-color: #fde68a;
+}
+
+
+.member-with-action {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+}
+
+.promote-button {
+    font-size: 0.8rem;
+    padding: 0.3rem 0.6rem;
+    border: none;
+    border-radius: 6px;
+    background-color: #fef9c3;
+    color: #92400e;
+    cursor: pointer;
+}
+
+.promote-button:hover {
+    background-color: #fde68a;
+}
