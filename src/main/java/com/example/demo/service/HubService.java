@@ -9,6 +9,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
@@ -83,6 +84,35 @@ public class HubService {
         repository.save(hub);
     }
 
+
+    @Transactional
+    public boolean tryUpdatePhoto(Long hubId, String url) {
+        Optional<Hub> optionalHub = repository.findById(hubId);
+        if (optionalHub.isEmpty()) return false;
+
+        Hub hub = optionalHub.get();
+
+        if (hub.getPhotoLastUpdated() != null &&
+                hub.getPhotoLastUpdated().isEqual(LocalDate.now())) {
+            return false;
+        }
+
+        hub.setPhotoUrl(url);
+        hub.setPhotoLastUpdated(LocalDate.now());
+        repository.save(hub);
+        return true;
+    }
+
+    @Transactional
+    public void deletePhoto(Long hubId) {
+        Optional<Hub> optionalHub = repository.findById(hubId);
+        if (optionalHub.isPresent()) {
+            Hub hub = optionalHub.get();
+            hub.setPhotoUrl(null);
+            hub.setPhotoLastUpdated(null);
+            repository.save(hub);
+        }
+    }
 
 
     public List<HubActivityDto> getTopActiveHubsInLastNHours(int hours, int limit) {

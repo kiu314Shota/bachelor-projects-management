@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,24 +15,29 @@ import java.util.List;
 public class Hub {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @SequenceGenerator(name = "hub_seq", sequenceName = "hub_id_seq", allocationSize = 1)    private Long id;
+    @SequenceGenerator(name = "hub_seq", sequenceName = "hub_id_seq", allocationSize = 1)
+    private Long id;
 
     private String name;
     private String description;
     private boolean isPublic;
+
     @Column(nullable = false)
     private boolean isDeleted = false;
 
+    @Column(length = 500)
+    private String photoUrl;
+
+    private LocalDate photoLastUpdated;
+
     @OneToMany(mappedBy = "hub", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Post> posts = new ArrayList<>() ;
+    private List<Post> posts = new ArrayList<>();
 
     @ManyToMany(mappedBy = "adminHubs")
-    private List<User> admins =new ArrayList<>();
+    private List<User> admins = new ArrayList<>();
 
     @ManyToMany(mappedBy = "memberHubs")
-    private List<User> members =new ArrayList<>();
-
-
+    private List<User> members = new ArrayList<>();
 
     public void setPrivate() {
         this.isPublic = false;
@@ -40,4 +46,6 @@ public class Hub {
     public void setPublic() {
         this.isPublic = true;
     }
+
+
 }

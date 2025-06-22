@@ -12,6 +12,7 @@ public class HubResponseDto {
     private boolean isPublic;
     private boolean isDeleted;
 
+    private String photoUrl;
     private List<Long> postIds;
     private List<Long> adminIds;
     private List<Long> memberIds;

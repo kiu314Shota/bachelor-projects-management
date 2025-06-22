@@ -108,6 +108,18 @@ public class HubController {
         hubService.softDeleteById(hubId);
     }
 
+    @SecurityRequirement(name = "bearerAuth")
+    @PutMapping("/{id}/photo")
+    public boolean tryUpdatePhoto(@PathVariable Long id, @RequestParam String url) {
+        return hubService.tryUpdatePhoto(id, url);
+    }
+
+    @SecurityRequirement(name = "bearerAuth")
+    @DeleteMapping("/{id}/photo")
+    public void deletePhoto(@PathVariable Long id) {
+        hubService.deletePhoto(id);
+    }
+
     private HubResponseDto toDto(Hub hub) {
         HubResponseDto dto = modelMapper.map(hub, HubResponseDto.class);
         dto.setAdminIds(hub.getAdmins() != null ? hub.getAdmins().stream().map(User::getId).toList() : List.of());
