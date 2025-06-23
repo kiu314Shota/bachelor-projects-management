@@ -152,7 +152,9 @@ export default function HubPage() {
                         </div>
                     </div>
 
-                    {posts.map((post) => (
+                    {[...posts]
+                        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+                        .map((post) => (
                         <PostCard
                             key={post.id}
                             post={post}
