@@ -1,6 +1,6 @@
 import "./HubRightPanel.css";
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import {useEffect, useRef, useState} from "react";
+import {useNavigate} from "react-router-dom";
 import api from "../axios";
 
 export default function HubRightPanel({
@@ -21,12 +21,43 @@ export default function HubRightPanel({
             !(currentHubId === 1 && user.id === 1) &&
             !adminUsers.some(admin => admin.id === user.id)
     );
+    const [hub, setHub] = useState(null);
+    const isPrivate = hub ? !hub.public : false;
+    const buttonLabel = isPrivate ? "🔒 Private Hub" : "🌐 Public Hub";
+    const [expandedMemberId, setExpandedMemberId] = useState(null);
+    const dropdownRef = useRef();
+
+    useEffect(() => {
+        const handleClickOutside = (e) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+                setExpandedMemberId(null);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
+
+    useEffect(() => {
+        const fetchHub = async () => {
+            try {
+                const res = await api.get(`/hubs/${currentHubId}`);
+                setHub(res.data);
+            } catch (err) {
+                console.error("Failed to fetch hub details", err);
+            }
+        };
+
+        fetchHub();
+        fetchRequests();
+    }, [currentHubId, currentUserId, isAdmin]);
 
     const fetchRequests = async () => {
         try {
             if (isAdmin) {
                 const res = await api.get(`/hub-join-requests/by-hub/${currentHubId}`, {
-                    params: { adminId: currentUserId }
+                    params: {adminId: currentUserId}
                 });
                 setRequests(res.data);
             }
@@ -38,6 +69,27 @@ export default function HubRightPanel({
     useEffect(() => {
         fetchRequests();
     }, [currentHubId, currentUserId, isAdmin]);
+
+
+    const handleTogglePrivacy = async () => {
+        try {
+            await api.patch(`/hubs/${currentHubId}/toggle-privacy`, null, {
+                params: {adminId: currentUserId}
+            });
+
+            const updated = await api.get(`/hubs/${currentHubId}`);
+            setHub(updated.data); // update local hub state
+            setHubs(prev =>
+                prev.map(h =>
+                    h.id === updated.data.id ? updated.data : h
+                )
+            );
+        } catch (err) {
+            console.error("Privacy toggle failed", err);
+            alert("Failed to change privacy.");
+        }
+    };
+
 
     const handleApprove = async (senderId) => {
         try {
@@ -91,7 +143,7 @@ export default function HubRightPanel({
     const handlePromote = async (memberId, name) => {
         try {
             await api.post(`/hubs/${currentHubId}/add-admin`, null, {
-                params: { userId: memberId }
+                params: {userId: memberId}
             });
             alert(`${name} was promoted to admin.`);
         } catch (err) {
@@ -106,7 +158,7 @@ export default function HubRightPanel({
 
         try {
             await api.delete(`/hubs/${currentHubId}/leave-hub`, {
-                params: { userId: currentUserId }
+                params: {userId: currentUserId}
             });
 
             const hubsRes = await api.get("/hubs");
@@ -125,33 +177,26 @@ export default function HubRightPanel({
     return (
         <div className="hub-right-panel">
             {isAdmin && (
-                <div className="privacy-toggle-section">
-                    <button
-                        className="toggle-privacy-button"
-                        onClick={async () => {
-                            try {
-                                await api.patch(`/hubs/${currentHubId}/toggle-privacy`, null, {
-                                    params: { adminId: currentUserId }
-                                });
+                <>
+                    <h3>Change Privacy</h3>
+                    <div className="privacy-toggle-container">
+                        <button className="hub-button-sidebar toggle-privacy-button" onClick={handleTogglePrivacy}>
+                            {buttonLabel}
+                        </button>
 
-                                const updated = await api.get(`/hubs/${currentHubId}`);
-                                setHubs(prev =>
-                                    prev.map(h =>
-                                        h.id === updated.data.id ? updated.data : h
-                                    )
-                                );
 
-                                alert("Privacy updated!");
-                            } catch (err) {
-                                console.error("Privacy toggle failed", err);
-                                alert("Failed to change privacy.");
-                            }
-                        }}
-                    >
-                        🔒🔓 Toggle Privacy
-                    </button>
-                </div>
+                        <label className="toggle-switch">
+                            <input
+                                type="checkbox"
+                                checked={hub ? !hub.public : false}
+                                onChange={handleTogglePrivacy}
+                            />
+                            <span className="toggle-slider"></span>
+                        </label>
+                    </div>
+                </>
             )}
+
 
             <h3>Admins</h3>
             {adminUsers?.length ? (
@@ -183,38 +228,66 @@ export default function HubRightPanel({
             )}
 
             <h3>Members</h3>
-            {filteredMembers?.length ? (
-                filteredMembers.map((user) => (
+            {filteredMembers.map((user) => {
+                const isExpanded = expandedMemberId === user.id;
+
+                return (
                     <div key={user.id} className="member-entry">
-                        <button className="hub-button-sidebar public-hover" disabled>
-                            {user.firstName} {user.lastName}
+                        <button
+                            className="hub-button-sidebar member-main-button"
+                            onClick={() => {
+                                if (!isAdmin) {
+                                    navigate(`/profile/${user.id}`);
+                                } else {
+                                    setExpandedMemberId((prev) => (prev === user.id ? null : user.id));
+                                }
+                            }}
+                        >
+                            {user.firstName} {user.lastName} {isAdmin && "⬇️"}
                         </button>
-                        {isAdmin && (
-                            <div className="member-actions">
+
+                        {isAdmin && isExpanded && (
+                            <div
+                                ref={dropdownRef}
+                                className="member-action-dropdown floating"
+                                style={{ position: "absolute", right: "20px", zIndex: 1000 }}
+                            >
                                 <button
-                                    className="remove-member-button"
-                                    onClick={() => handleKickMember(user.id)}
+                                    className="hub-button-sidebar"
+                                    onClick={() => navigate(`/profile/${user.id}`)}
                                 >
-                                    ❌
+                                    👤 Profile
                                 </button>
                                 <button
-                                    className="promote-member-button"
-                                    onClick={() => handlePromote(user.id, `${user.firstName} ${user.lastName}`)}
+                                    className="hub-button-sidebar"
+                                    onClick={() => {
+                                        handlePromote(user.id, `${user.firstName} ${user.lastName}`);
+                                        setExpandedMemberId(null);
+                                    }}
                                 >
-                                    🔼
+                                    👑 Promote to Admin
+                                </button>
+                                <button
+                                    className="hub-button-sidebar danger"
+                                    onClick={() => {
+                                        handleKickMember(user.id);
+                                        setExpandedMemberId(null);
+                                    }}
+                                >
+                                    ❌ Remove Member
                                 </button>
                             </div>
                         )}
                     </div>
-                ))
-            ) : (
-                <p>No members listed.</p>
-            )}
+                );
+            })}
+
+
 
             {currentHubId !== 1 && (
                 <div className="leave-hub-section">
                     <button className="leave-hub-button" onClick={handleLeaveHub}>
-                        🚪 Leave Hub
+                        Leave Hub
                     </button>
                 </div>
             )}

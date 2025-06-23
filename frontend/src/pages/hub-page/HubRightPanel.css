@@ -6,16 +6,18 @@
     border-radius: 8px;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
     align-self: flex-start;
-    height: auto;
+    max-height: 80vh;
+    /*overflow-y: auto;*/
 }
 
 .hub-right-panel h3 {
-    font-size: 1.1rem;
-    color: #2563eb;
-    margin-bottom: 0.75rem;
-    border-bottom: 1px solid #e5e7eb;
-    padding-bottom: 0.25rem;
+    margin-top: 1.5rem;
 }
+
+.hub-right-panel h3:first-of-type {
+    margin-top: 0;
+}
+
 
 .hub-right-panel ul {
     list-style: none;
@@ -28,6 +30,7 @@
     padding: 0.4rem 0;
     color: #1f2937;
     border-bottom: 1px solid #f3f4f6;
+    background-color: #2563eb;
 }
 
 .join-request {
@@ -66,12 +69,59 @@
 }
 
 .member-entry {
+    position: relative; /* to anchor dropdown */
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 0.5rem;
+    flex-direction: column;
+    gap: 0.25rem;
+    margin-bottom: 0.75rem;
 }
 
+.member-main-button {
+    width: 100%;
+    text-align: left;
+    padding-right: 1.5rem;
+}
+
+.member-action-dropdown {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    min-width: 180px;
+    width: 95%;
+    background-color: white;
+    padding: 0.5rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.member-action-dropdown.floating {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    margin-top: 0.25rem;
+    z-index: 1000;
+}
+
+.member-action-dropdown .hub-button-sidebar {
+    font-size: 0.9rem;
+    text-align: left;
+}
+.hub-button-sidebar:hover {
+    background-color: #2563eb;
+    color: white;
+}
+
+/* Optional red style for danger actions */
+.member-action-dropdown .danger {
+    background-color: #fee2e2;
+    color: #991b1b;
+}
+
+.member-action-dropdown .danger:hover {
+    background-color: #dc2626;
+    color: white;
+
+}
 .member-actions {
     display: flex;
     gap: 4px;
@@ -127,13 +177,16 @@
 }
 
 
+
+
 .leave-hub-section {
     margin-top: 1rem;
     text-align: center;
 }
 
 .leave-hub-button {
-    background-color: #f87171;
+    background-color: #ef4444;
+    width: 100%;              /* full width of sidebar */
     color: white;
     border: none;
     padding: 0.5rem 1rem;
@@ -144,20 +197,89 @@
 }
 
 .leave-hub-button:hover {
-    background-color: #ef4444;
+    background-color: #dc2626; /* darker red on hover */
 }
 
 .privacy-toggle-section {
     margin-top: 1rem;
-    text-align: center;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.toggle-switch {
+    position: relative;
+    width: 40px;
+    height: 22px;
+    margin-left: 0.75rem;
+    flex-shrink: 0;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+.toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    border-radius: 9999px;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    transition: background-color 0.4s;
+    background-color: #2563eb;
+    display: flex;
+    align-items: center; /* 👈 vertical centering */
+    padding: 2px;
+}
+
+.toggle-slider::before {
+    content: "";
+    height: 18px;
+    width: 18px;
+    border-radius: 50%;
+    transition: transform 0.4s;
+    background-color: white;
+
+}
+
+.toggle-switch input:checked + .toggle-slider {
+    background-color: #ef4444;
 }
 
 
+
+.toggle-switch input:checked + .toggle-slider::before {
+    transform: translateX(18px);
+}
+
+.privacy-toggle-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    height: 40px;
+    margin-bottom: 1.5rem;
+}
+
 .toggle-privacy-button {
-    background-color: #f3f4f6;
-    color: #1f2937;
-    border: 1px solid #d1d5db;
-    padding: 0.5rem 1rem;
-    border-radius: 8px;
+    max-width: 180px; /* shortened width */
+    flex-grow: 0;
+    border: none;
+    padding: 0.4rem 0.75rem;
+    border-radius: 12px;
+    background-color: #e0f2fe;
+    color: #1e3a8a;
     cursor: pointer;
+    font-size: 0.95rem;
+    transition: background-color 0.3s ease;
+    text-align: left;
+}
+
+.toggle-privacy-button:hover {
+    background-color: #2563eb; /* your hub button hover blue */
+    color: white;
 }
