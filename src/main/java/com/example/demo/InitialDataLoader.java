@@ -43,7 +43,6 @@ public class InitialDataLoader implements CommandLineRunner {
             anon.setProfilePictureUrl("https://i.ibb.co/xKqjpfJF/download.png");
             anon.setRole(Role.USER);
             //აქ ანონიმურის ფოტა დასამატებელი
-            anon.setProfilePictureUrl("");
 
             // Link hub to user (with modifiable lists)
             List<Hub> adminHubs = new ArrayList<>();

@@ -24,7 +24,9 @@ public class UserService {
 
     public User save(User user) {
         user.setPasswordHash(passwordEncoder.encode(user.getPasswordHash()));
-
+        if(user.getProfilePictureUrl().isEmpty() || user.getProfilePictureUrl() == null){
+            user.setProfilePictureUrl("https://i.ibb.co/W4z4ktHq/default.jpg");
+        }
         Hub hub = hubService.findById(1L).orElseGet(() -> {
             Hub defaultHub = new Hub();
             defaultHub.setName("general");
